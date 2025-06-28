@@ -1,0 +1,402 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import axios from "axios"
+import { MapPin, User, Phone, CreditCard } from "lucide-react"
+import toast from "react-hot-toast"
+import { useAuth } from "../context/AuthContext"
+
+const Booking = () => {
+  const { id } = useParams()
+  const [bus, setBus] = useState(null)
+  const [selectedSeats, setSelectedSeats] = useState([])
+  const [route, setRoute] = useState({ from: "", to: "" })
+  const [journeyDate, setJourneyDate] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm()
+
+  const fetchBusDetails = useCallback(async () => {
+    try {
+      console.log("🚌 Fetching bus details for ID:", id)
+      const response = await axios.get(`/api/buses/${id}`)
+      console.log("✅ Bus details fetched:", response.data.operatorName)
+      setBus(response.data)
+      setLoading(false)
+    } catch (error) {
+      console.error("❌ Failed to fetch bus details:", error)
+      toast.error("Failed to fetch bus details")
+      setLoading(false)
+    }
+  }, [id])
+
+  useEffect(() => {
+    console.log("🔄 Component mounted, checking session storage...")
+
+    const seats = JSON.parse(sessionStorage.getItem("selectedSeats") || "[]")
+    const routeData = JSON.parse(sessionStorage.getItem("route") || "{}")
+    const date = sessionStorage.getItem("journeyDate")
+
+    console.log("📦 Session data:", { seats, routeData, date })
+
+    if (seats.length === 0) {
+      console.log("❌ No seats selected, redirecting to search")
+      toast.error("No seats selected")
+      navigate("/search")
+      return
+    }
+
+    setSelectedSeats(seats)
+    setRoute(routeData)
+    setJourneyDate(date)
+
+    if (user) {
+      console.log("👤 Pre-filling user data:", user.email)
+      setValue("contactEmail", user.email)
+      setValue("contactPhone", user.phone)
+    }
+
+    fetchBusDetails()
+  }, [id, user, setValue, navigate, fetchBusDetails])
+
+  const onSubmit = async (data) => {
+    console.log("🚀 Starting booking submission...")
+    setBookingLoading(true)
+
+    try {
+      // Validate journey date
+      const safeJourneyDate = new Date(journeyDate)
+      if (isNaN(safeJourneyDate)) {
+        console.error("❌ Invalid journey date:", journeyDate)
+        toast.error("Invalid journey date")
+        setBookingLoading(false)
+        return
+      }
+
+      // Prepare passenger data
+      const passengers = selectedSeats.map((seat, index) => ({
+        name: data[`passenger_${index}_name`],
+        age: Number.parseInt(data[`passenger_${index}_age`]),
+        gender: data[`passenger_${index}_gender`],
+        seatNumber: seat,
+      }))
+
+      console.log("👥 Passengers prepared:", passengers)
+
+      // Prepare booking data
+      const bookingData = {
+        busId: id,
+        passengers,
+        journeyDate: safeJourneyDate.toISOString(),
+        contactDetails: {
+          email: data.contactEmail,
+          phone: data.contactPhone,
+        },
+      }
+
+      console.log("📦 Booking data to submit:", bookingData)
+
+      // Check if user is authenticated
+      const token = localStorage.getItem("token")
+      if (!token) {
+        console.error("❌ No authentication token found")
+        toast.error("Please login to continue")
+        navigate("/login")
+        return
+      }
+
+      console.log("🔐 Token found, making API request...")
+
+      // Make the booking request
+      const response = await axios.post("/api/bookings", bookingData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      console.log("✅ Booking successful:", response.data)
+
+      // Clear session storage
+      sessionStorage.removeItem("selectedSeats")
+      sessionStorage.removeItem("busId")
+      sessionStorage.removeItem("journeyDate")
+      sessionStorage.removeItem("route")
+
+      toast.success("Booking confirmed successfully!")
+      navigate(`/booking-confirmation/${response.data.booking._id}`)
+    } catch (error) {
+      console.error("💥 Booking error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        config: error.config,
+      })
+
+      // Show specific error message
+      let errorMessage = "Booking failed"
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.response?.status === 401) {
+        errorMessage = "Please login to continue"
+        navigate("/login")
+      } else if (error.response?.status === 400) {
+        errorMessage = "Invalid booking data. Please check your details."
+      } else if (error.response?.status === 500) {
+        errorMessage = "Server error. Please try again later."
+      } else if (error.code === "NETWORK_ERROR") {
+        errorMessage = "Network error. Please check if the server is running."
+      }
+
+      toast.error(errorMessage)
+    } finally {
+      setBookingLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4"></div>
+          <p>Loading booking details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!bus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 text-lg">Bus not found</p>
+          <button onClick={() => navigate("/search")} className="btn btn-primary mt-4">
+            Back to Search
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const totalAmount = selectedSeats.length * bus.price
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center text-lg font-semibold">
+                  <MapPin className="h-5 w-5 mr-2 text-blue-600" />
+                  {route.from} → {route.to}
+                </div>
+                <div className="text-gray-600">
+                  {new Date(journeyDate).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
+              </div>
+              <button onClick={() => navigate(-1)} className="text-blue-600 hover:text-blue-800">
+                ← Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Booking Form */}
+          <div className="lg:col-span-2">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Contact Details */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Phone className="h-5 w-5 mr-2" />
+                  Contact Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      {...register("contactEmail", { required: "Email is required" })}
+                      className="input w-full"
+                    />
+                    {errors.contactEmail && <p className="text-red-500 text-sm mt-1">{errors.contactEmail.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      {...register("contactPhone", { required: "Phone is required" })}
+                      className="input w-full"
+                    />
+                    {errors.contactPhone && <p className="text-red-500 text-sm mt-1">{errors.contactPhone.message}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Passenger Details */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <User className="h-5 w-5 mr-2" />
+                  Passenger Details
+                </h3>
+                <div className="space-y-6">
+                  {selectedSeats.map((seat, index) => (
+                    <div key={seat} className="border border-gray-200 rounded-lg p-4">
+                      <h4 className="font-medium mb-3">
+                        Passenger {index + 1} - Seat {seat}
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                          <input
+                            type="text"
+                            {...register(`passenger_${index}_name`, { required: "Name is required" })}
+                            className="input w-full"
+                          />
+                          {errors[`passenger_${index}_name`] && (
+                            <p className="text-red-500 text-sm mt-1">{errors[`passenger_${index}_name`].message}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            {...register(`passenger_${index}_age`, { required: "Age is required" })}
+                            className="input w-full"
+                          />
+                          {errors[`passenger_${index}_age`] && (
+                            <p className="text-red-500 text-sm mt-1">{errors[`passenger_${index}_age`].message}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                          <select
+                            {...register(`passenger_${index}_gender`, { required: "Gender is required" })}
+                            className="input w-full"
+                          >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                          </select>
+                          {errors[`passenger_${index}_gender`] && (
+                            <p className="text-red-500 text-sm mt-1">{errors[`passenger_${index}_gender`].message}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Terms and Conditions */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    {...register("terms", { required: "Please accept terms and conditions" })}
+                    className="mt-1 mr-3"
+                  />
+                  <div>
+                    <p className="text-sm text-gray-700">I agree to the Terms and Conditions and Privacy Policy</p>
+                    {errors.terms && <p className="text-red-500 text-sm mt-1">{errors.terms.message}</p>}
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* Booking Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+              <h3 className="text-lg font-semibold mb-4">Booking Summary</h3>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Bus</span>
+                  <span className="font-medium">{bus.operatorName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Route</span>
+                  <span className="font-medium">
+                    {route.from} → {route.to}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date</span>
+                  <span className="font-medium">{new Date(journeyDate).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Departure</span>
+                  <span className="font-medium">{bus.schedule.departureTime}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Seats</span>
+                  <span className="font-medium">{selectedSeats.join(", ")}</span>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mb-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Base Fare ({selectedSeats.length} seats)</span>
+                    <span className="font-medium">₹{totalAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total Amount</span>
+                    <span className="text-blue-600">₹{totalAmount}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={bookingLoading}
+                  className={`w-full h-12 px-5 rounded-md text-lg font-semibold flex items-center justify-center transition duration-200
+                    ${bookingLoading
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 text-white"}
+                  `}
+                >
+                  {bookingLoading ? (
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Confirm Booking
+                    </>
+                  )}
+                </button>
+
+
+              <div className="mt-4 text-center">
+                <p className="text-xs text-gray-500">Your booking will be confirmed instantly</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Booking
