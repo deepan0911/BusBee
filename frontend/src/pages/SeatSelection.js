@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { MapPin, Users, ArrowRight } from "lucide-react"
 import toast from "react-hot-toast"
+import Chatbot from "../components/ChatBot"
 import SeatLayout from "../components/SeatLayout"
 
 const SeatSelection = () => {
@@ -204,6 +205,7 @@ const SeatSelection = () => {
           </div>
         </div>
       </div>
+      <Chatbot/>
     </div>
   )
 }

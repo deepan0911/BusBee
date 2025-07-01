@@ -6,6 +6,7 @@ import axios from "axios"
 import { MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Shield } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuth } from "../context/AuthContext"
+import Chatbot from "../components/ChatBot"
 
 const BusDetails = () => {
   const { id } = useParams()
@@ -275,6 +276,7 @@ const BusDetails = () => {
           </div>
         </div>
       </div>
+      <Chatbot />
     </div>
   )
 }

@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, MapPin, Calendar, Shield, Clock, Star } from "lucide-react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import Chatbot from "../components/ChatBot"
+
 
 const Home = () => {
+
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
@@ -17,6 +20,7 @@ const Home = () => {
   const [toFocused, setToFocused] = useState(false)
   const [fromActiveIndex, setFromActiveIndex] = useState(-1)
   const [toActiveIndex, setToActiveIndex] = useState(-1)
+  const [openFAQ, setOpenFAQ] = useState(null)
 
   const navigate = useNavigate()
 
@@ -27,6 +31,36 @@ const Home = () => {
     { from: "Mumbai", to: "Goa" },
     { from: "Delhi", to: "Agra" },
     { from: "Hyderabad", to: "Bangalore" },
+    { from:"Coimbatore" ,to:"Chennai"},
+    { from:"Coimbatore" ,to:"Bangalore"},
+  ]
+
+  const faqList = [
+    {
+      question: "How do I book a bus ticket?",
+      answer:
+        "Simply enter your origin, destination, and travel date, click 'Search', choose your bus and seat, then proceed to payment.",
+    },
+    {
+      question: "Can I cancel or reschedule my ticket?",
+      answer:
+        "Yes, most tickets can be canceled or rescheduled as per the operator's policy. You’ll find options in your booking history or confirmation email.",
+    },
+    {
+      question: "Will I receive a confirmation after booking?",
+      answer:
+        "Absolutely! You'll get an instant email and SMS confirmation with your ticket details and boarding point.",
+    },
+    {
+      question: "Is it safe to book tickets online?",
+      answer:
+        "Yes! We use secure payment gateways and encrypted data to ensure all your transactions are safe and private.",
+    },
+    {
+      question: "Do I need to carry a printout of the ticket?",
+      answer:
+        "Not necessarily. Most operators accept mobile tickets. Just show the SMS or email at boarding.",
+    },
   ]
 
   const allCities = Array.from(new Set(routes.flatMap((r) => [r.from, r.to])))
@@ -96,6 +130,8 @@ const Home = () => {
       }
     }
   }
+
+  const toggleFAQ = (index) => setOpenFAQ(openFAQ === index ? null : index)
 
   return (
     <div className="min-h-screen">
@@ -261,42 +297,37 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Popular Routes Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Popular Routes</h2>
-            <p className="text-lg text-gray-600">Most booked bus routes by our customers</p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {routes.map((route, index) => (
-              <div
-                key={index}
-                className="card p-6 hover:shadow-lg transition-shadow cursor-pointer border rounded"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {route.from} → {route.to}
-                    </h3>
-                    <p className="text-gray-600">~Duration Info</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-600">₹350</p>
-                    <p className="text-sm text-gray-500">onwards</p>
-                  </div>
-                </div>
-                <button className="w-full border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-medium py-2 px-4 rounded transition">
-                  Book Now
+      {/* FAQs Section */}
+      <section className="py-16 bg-gray-100">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">🚌 FAQs – Bus Ticket Booking</h2>
+
+          <div className="space-y-4">
+            {faqList.map((faq, index) => (
+              <div key={index} className="bg-white rounded shadow-md overflow-hidden">
+                <button
+                  className="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-800 focus:outline-none"
+                  onClick={() => toggleFAQ(index)}
+                >
+                  {faq.question}
+                  <span className="text-xl">{openFAQ === index ? "−" : "+"}</span>
                 </button>
+                {openFAQ === index && (
+                  <div className="px-6 pb-4 text-gray-700 text-sm transition-all duration-300">
+                    {faq.answer}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
+      <Chatbot />
     </div>
+    
   )
+
 }
 
 export default Home

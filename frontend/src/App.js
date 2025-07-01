@@ -18,6 +18,8 @@ import AdminUsers from "./pages/admin/Users"
 import ProtectedRoute from "./components/ProtectedRoute"
 import AdminRoute from "./components/AdminRoute"
 import AdminRoutes from "./pages/admin/Routes"
+import Payment from "./pages/Payment";
+
 
 function App() {
   return (
@@ -48,6 +50,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route 
+              path="/payment" 
+              element={
+                <Payment />
+              } 
+            />
+            
             <Route
               path="/booking-confirmation/:bookingId"
               element={

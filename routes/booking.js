@@ -114,10 +114,12 @@ router.post("/", auth, async (req, res) => {
     }
 
     console.log("🎉 Booking completed successfully")
-    res.status(201).json({
-      message: "Booking confirmed successfully!",
-      booking,
-    })
+   res.status(201).json({
+  success: true,
+  message: "Booking confirmed successfully!",
+  booking,
+})
+
   } catch (error) {
     console.error("💥 Booking error:", error)
     res.status(500).json({ message: "Server error", error: error.message })

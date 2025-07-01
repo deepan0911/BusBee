@@ -5,6 +5,7 @@ import { Link } from "react-router-dom"
 import axios from "axios"
 import { Calendar, MapPin, Clock, Users, X, Eye } from "lucide-react"
 import toast from "react-hot-toast"
+import Chatbot from "../components/ChatBot"
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([])
@@ -27,9 +28,10 @@ const MyBookings = () => {
   }
 
   const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) {
-      return
-    }
+   if (!window.confirm("Are you sure you want to Cancel ticket? 10% will be deducted.")) {
+   return;
+  }
+
 
     setCancellingBooking(bookingId)
     try {
@@ -216,6 +218,7 @@ const MyBookings = () => {
           </div>
         )}
       </div>
+      <Chatbot/>
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { CheckCircle, Download, MapPin, Users, Mail } from "lucide-react"
 import toast from "react-hot-toast"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
+import Chatbot from "../components/ChatBot"
 
 const BookingConfirmation = () => {
   const { bookingId } = useParams()
@@ -15,9 +16,6 @@ const BookingConfirmation = () => {
   const printRef = useRef()
 
   useEffect(() => {
-    fetchBookingDetails()
-  }, [bookingId])
-
   const fetchBookingDetails = async () => {
     try {
       const response = await axios.get(`/api/bookings/${bookingId}`)
@@ -29,30 +27,64 @@ const BookingConfirmation = () => {
     }
   }
 
+  fetchBookingDetails()
+  window.scrollTo(0, 0)
+}, [bookingId])
+
+
+
   const handleDownloadTicket = async () => {
-    if (!printRef.current) return
+   if (!printRef.current) return
 
-    try {
-      const element = printRef.current
+     try {
+     const element = printRef.current
+     // Capture the element as a canvas
+     const canvas = await html2canvas(element, {
+      scale: 2, // Increase scale for better resolution
+       useCORS: true, // If you have external images/fonts, ensure this is set
+       logging: true, // For debugging in console
+      });
 
-      const canvas = await html2canvas(element, { scale: 2 })
-      const imgData = canvas.toDataURL("image/png")
+      const imgData = canvas.toDataURL("image/jpeg", 1.0); // Use JPEG for smaller file size, adjust quality
 
-      const pdf = new jsPDF("p", "pt", "a4")
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // Height of a single A4 page
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight)
-      pdf.save(`Booking-${booking.bookingId}.pdf`)
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
 
-      toast.success("Ticket downloaded!")
-    } catch (error) {
-      console.error("Failed to download ticket", error)
-      toast.error("Failed to download ticket")
-    }
-  }
+      // Calculate the scaled height of the image to fit the PDF width
+      const ratio = pdfWidth / imgWidth;
+      const imgScaledHeight = imgHeight * ratio;
 
-  if (loading) {
+      let position = 0; // Y-position on the PDF page
+
+      // If the content fits on one page
+            if (imgScaledHeight <= pdfHeight) {
+          pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgScaledHeight);
+          } else {
+        // Content spans multiple pages
+          while (position < imgScaledHeight) {
+            pdf.addImage(imgData, "JPEG", 0, position * -1, pdfWidth, imgScaledHeight);  
+            position += pdfHeight;
+          // Add a new page if there's more content to draw, and it's not the last piece
+            if (position < imgScaledHeight) {
+            pdf.addPage();
+            }
+        }
+        }
+
+      pdf.save(`Booking-${booking.bookingId}.pdf`);
+
+      toast.success("Ticket downloaded!");
+      } catch (error) {
+      console.error("Failed to download ticket", error);
+      toast.error("Failed to download ticket");
+      }
+      };
+
+    if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -74,7 +106,8 @@ const BookingConfirmation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+     <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex-grow overflow-y-auto py-8">
       <div
         className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-sm p-8"
         ref={printRef}
@@ -236,6 +269,8 @@ const BookingConfirmation = () => {
           <li>• A confirmation email has been sent to your registered email address</li>
         </ul>
       </div>
+      <Chatbot/>
+    </div>
     </div>
   )
 }

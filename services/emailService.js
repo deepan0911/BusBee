@@ -155,10 +155,10 @@ const sendBookingConfirmation = async (userEmail, bookingDetails) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: userEmail,
-    subject: "🚌 Booking Confirmation - Bus Ticket",
+    subject: "Booking Confirmation - Bus Ticket",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-        <h2 style="color: #007BFF;">Your Bus Booking is Confirmed!</h2>
+        <h2 style="color: #007BFF;">✅Your Bus Booking is Confirmed!</h2>
         <p>Dear Customer,</p>
         <p>Thank you for booking with us. Below are your booking details:</p>
 
@@ -229,6 +229,8 @@ const sendCancellationEmail = async (userEmail, bookingDetails) => {
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td><strong>Booking ID:</strong></td><td>${bookingDetails.bookingId}</td></tr>
             <tr><td><strong>Cancellation Date:</strong></td><td>${new Date().toLocaleDateString()}</td></tr>
+            <tr><td><strong>Original Amount:</strong></td><td>₹${(bookingDetails.refundAmount / 0.9).toFixed(2)}</td></tr>
+            <tr><td><strong>Cancellation Charges (10%):</strong></td><td>₹${((bookingDetails.refundAmount / 0.9) * 0.1).toFixed(2)}</td></tr>
             <tr><td><strong>Refund Amount:</strong></td><td>₹${bookingDetails.refundAmount.toFixed(2)}</td></tr>
           </table>
           <p style="margin-top: 10px;">Your refund will be processed within <strong>5-7 business days</strong>.</p>
@@ -247,6 +249,7 @@ const sendCancellationEmail = async (userEmail, bookingDetails) => {
     throw error;
   }
 };
+
 
 module.exports = {
   sendBookingConfirmation,

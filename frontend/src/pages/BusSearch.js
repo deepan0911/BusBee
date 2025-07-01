@@ -5,6 +5,7 @@ import { useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { Filter, MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Calendar } from "lucide-react"
 import toast from "react-hot-toast"
+import Chatbot from "../components/ChatBot"
 
 const BusSearch = () => {
   const [searchParams] = useSearchParams()
@@ -328,6 +329,7 @@ const BusSearch = () => {
           </div>
         </div>
       </div>
+      <Chatbot />
     </div>
   )
 }

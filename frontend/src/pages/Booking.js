@@ -7,6 +7,8 @@ import axios from "axios"
 import { MapPin, User, Phone, CreditCard } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuth } from "../context/AuthContext"
+import Chatbot from "../components/ChatBot"
+
 
 const Booking = () => {
   const { id } = useParams()
@@ -15,7 +17,7 @@ const Booking = () => {
   const [route, setRoute] = useState({ from: "", to: "" })
   const [journeyDate, setJourneyDate] = useState("")
   const [loading, setLoading] = useState(true)
-  const [bookingLoading, setBookingLoading] = useState(false)
+  const [bookingLoading] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -69,101 +71,41 @@ const Booking = () => {
     fetchBusDetails()
   }, [id, user, setValue, navigate, fetchBusDetails])
 
-  const onSubmit = async (data) => {
-    console.log("🚀 Starting booking submission...")
-    setBookingLoading(true)
+ const onSubmit = async (data) => {
+  const passengers = selectedSeats.map((seat, index) => ({
+    name: data[`passenger_${index}_name`],
+    age: Number.parseInt(data[`passenger_${index}_age`]),
+    gender: data[`passenger_${index}_gender`],
+    seatNumber: seat,
+  }));
 
-    try {
-      // Validate journey date
-      const safeJourneyDate = new Date(journeyDate)
-      if (isNaN(safeJourneyDate)) {
-        console.error("❌ Invalid journey date:", journeyDate)
-        toast.error("Invalid journey date")
-        setBookingLoading(false)
-        return
-      }
+  const bookingData = {
+    busId: id,
+    passengers,
+    journeyDate,
+    contactDetails: {
+      email: data.contactEmail,
+      phone: data.contactPhone,
+    },
+  };
 
-      // Prepare passenger data
-      const passengers = selectedSeats.map((seat, index) => ({
-        name: data[`passenger_${index}_name`],
-        age: Number.parseInt(data[`passenger_${index}_age`]),
-        gender: data[`passenger_${index}_gender`],
-        seatNumber: seat,
-      }))
+  const totalAmount = selectedSeats.length * bus.price;
 
-      console.log("👥 Passengers prepared:", passengers)
-
-      // Prepare booking data
-      const bookingData = {
-        busId: id,
-        passengers,
-        journeyDate: safeJourneyDate.toISOString(),
-        contactDetails: {
-          email: data.contactEmail,
-          phone: data.contactPhone,
-        },
-      }
-
-      console.log("📦 Booking data to submit:", bookingData)
-
-      // Check if user is authenticated
-      const token = localStorage.getItem("token")
-      if (!token) {
-        console.error("❌ No authentication token found")
-        toast.error("Please login to continue")
-        navigate("/login")
-        return
-      }
-
-      console.log("🔐 Token found, making API request...")
-
-      // Make the booking request
-      const response = await axios.post("/api/bookings", bookingData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-
-      console.log("✅ Booking successful:", response.data)
-
-      // Clear session storage
-      sessionStorage.removeItem("selectedSeats")
-      sessionStorage.removeItem("busId")
-      sessionStorage.removeItem("journeyDate")
-      sessionStorage.removeItem("route")
-
-      toast.success("Booking confirmed successfully!")
-      navigate(`/booking-confirmation/${response.data.booking._id}`)
-    } catch (error) {
-      console.error("💥 Booking error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        config: error.config,
-      })
-
-      // Show specific error message
-      let errorMessage = "Booking failed"
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
-      } else if (error.response?.status === 401) {
-        errorMessage = "Please login to continue"
-        navigate("/login")
-      } else if (error.response?.status === 400) {
-        errorMessage = "Invalid booking data. Please check your details."
-      } else if (error.response?.status === 500) {
-        errorMessage = "Server error. Please try again later."
-      } else if (error.code === "NETWORK_ERROR") {
-        errorMessage = "Network error. Please check if the server is running."
-      }
-
-      toast.error(errorMessage)
-    } finally {
-      setBookingLoading(false)
+  // ✅ Redirect to /payment with necessary data
+    navigate("/payment", {
+    state: {
+      amount: totalAmount,
+      bookingData,
+      token: localStorage.getItem("token"),
     }
-  }
+  });
+
+
+};
+
+
+
+
 
   if (loading) {
     return (
@@ -200,7 +142,11 @@ const Booking = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center text-lg font-semibold">
-                  <MapPin className="h-5 w-5 mr-2 text-blue-600" />
+                  <MapPin size={20} className="mr-2 text-blue-600" />
+                  <User size={20} className="mr-2" />
+                  <Phone size={20} className="mr-2" />
+                  <CreditCard size={20} className="mr-2" />
+
                   {route.from} → {route.to}
                 </div>
                 <div className="text-gray-600">
@@ -395,6 +341,7 @@ const Booking = () => {
           </div>
         </div>
       </div>
+      <Chatbot/>
     </div>
   )
 }
