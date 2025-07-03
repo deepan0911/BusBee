@@ -158,7 +158,7 @@ const sendBookingConfirmation = async (userEmail, bookingDetails) => {
     subject: "Booking Confirmation - Bus Ticket",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-        <h2 style="color: #007BFF;">✅Your Bus Booking is Confirmed!</h2>
+        <h2 style="color: #007BFF;">✅ Your Bus Booking is Confirmed!</h2>
         <p>Dear Customer,</p>
         <p>Thank you for booking with us. Below are your booking details:</p>
 
