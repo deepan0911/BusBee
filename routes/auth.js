@@ -1,33 +1,29 @@
-const express = require("express")
-const jwt = require("jsonwebtoken")
-const User = require("../models/User")
-const { auth } = require("../middleware/auth")
-const router = express.Router()
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const passport = require("passport");
+const User = require("../models/User");
+const { auth } = require("../middleware/auth");
+
+const router = express.Router();
+
+// ─────── JWT BASED ─────────────────────
 
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, phone, role = "user" } = req.body
+    const { name, email, password, phone, role = "user" } = req.body;
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email })
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" })
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    // Create user
-    const user = new User({
-      name,
-      email,
-      password,
-      phone,
-      role,
-    })
+    const user = new User({ name, email, password, phone, role });
+    await user.save();
 
-    await user.save()
-
-    // Generate token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" })
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
 
     res.status(201).json({
       message: "User created successfully",
@@ -38,31 +34,25 @@ router.post("/register", async (req, res) => {
         email: user.email,
         role: user.role,
       },
-    })
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message })
+    res.status(500).json({ message: "Server error", error: error.message });
   }
-})
+});
 
 // Login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email, password } = req.body;
 
-    // Check if user exists
-    const user = await User.findOne({ email })
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" })
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password)
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" })
-    }
-
-    // Generate token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" })
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
 
     res.json({
       message: "Login successful",
@@ -73,11 +63,11 @@ router.post("/login", async (req, res) => {
         email: user.email,
         role: user.role,
       },
-    })
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message })
+    res.status(500).json({ message: "Server error", error: error.message });
   }
-})
+});
 
 // Get current user
 router.get("/me", auth, async (req, res) => {
@@ -90,10 +80,51 @@ router.get("/me", auth, async (req, res) => {
         phone: req.user.phone,
         role: req.user.role,
       },
-    })
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error" })
+    res.status(500).json({ message: "Server error" });
   }
-})
+});
 
-module.exports = router
+// ─────── GOOGLE OAUTH ─────────────────────
+
+// @route GET /api/auth/google
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account", // 👈 This line forces account chooser every time
+  })
+)
+// @route GET /api/auth/google/callback
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${process.env.CLIENT_URL}/login`,
+  }),
+  async (req, res) => {
+    try {
+      // ✅ `req.user` is already the Mongoose user
+      const user = req.user;
+
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "30d",
+      });
+
+      // ✅ Redirect to frontend with token
+      res.redirect(`${process.env.CLIENT_URL}/google-success?token=${token}`);
+    } catch (err) {
+      res.redirect(`${process.env.CLIENT_URL}/login?error=OAuthFailed`);
+    }
+  }
+);
+
+// Optional: logout
+router.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect(`${process.env.CLIENT_URL}/`);
+  });
+});
+
+module.exports = router;

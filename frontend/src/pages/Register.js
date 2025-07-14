@@ -56,6 +56,11 @@ const Register = () => {
     }
   }
 
+  const handleGoogleLogin = () => {
+    const backendURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"
+    window.location.href = `${backendURL}/api/auth/google`
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -114,22 +119,6 @@ const Register = () => {
                 className="input w-full mt-1"
               />
             </div>
-
-            {/* <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Account Type
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="input w-full mt-1"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div> */}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -200,14 +189,33 @@ const Register = () => {
                 {loading ? "Creating..." : "Create Account"}
               </button>
             </div>
-
-            <div className="text-center text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign in
-              </Link>
-            </div>
           </form>
+
+          {/* Divider */}
+          <div className="my-4 text-center text-sm text-gray-500">or</div>
+
+          {/* Google Register/Login Button */}
+          <button
+  onClick={handleGoogleLogin}
+  className="w-full h-11 flex items-center justify-center border border-gray-300 rounded-md shadow-sm hover:shadow-md transition bg-white"
+>
+  <div className="flex items-center gap-3">
+    <img
+      src="https://developers.google.com/identity/images/g-logo.png"
+      alt="Google logo"
+      className="w-5 h-5"
+    />
+    <span className="text-sm text-gray-700 font-medium">Sign up with Google</span>
+  </div>
+</button>
+
+
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign in
+            </Link>
+          </div>
         </div>
       </div>
     </div>

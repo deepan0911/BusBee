@@ -67,11 +67,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  // ✅ Add this for Google login token
+  const loginWithToken = (token, user) => {
+    localStorage.setItem("token", token)
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+    setUser(user)
+  }
+
   const value = {
     user,
     login,
     register,
     logout,
+    loginWithToken, // ✅ make it available to use
     loading,
   }
 

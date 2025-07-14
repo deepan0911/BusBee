@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Bus className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">BusBooking</span>
+              <span className="text-xl font-bold">BusBee</span>
             </div>
             <p className="text-gray-400 mb-4">Your trusted partner for safe and comfortable bus travel across India.</p>
             <div className="flex space-x-4">
@@ -83,7 +83,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>support@busbooking.com</span>
+                <span>support@busbee.com</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2" />
@@ -94,7 +94,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 BusBooking. All rights reserved.</p>
+          <p>&copy; 2024 BusBee. All rights reserved.</p>
         </div>
       </div>
     </footer>

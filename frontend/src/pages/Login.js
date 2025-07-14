@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
-import { Eye, EyeOff, LogIn } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import toast from "react-hot-toast"
 
 const Login = () => {
@@ -31,7 +31,6 @@ const Login = () => {
       const response = await login(formData.email, formData.password)
       toast.success("Login successful!")
 
-      // Redirect based on user role
       if (response.user.role === "admin") {
         navigate("/admin/dashboard")
       } else {
@@ -44,11 +43,19 @@ const Login = () => {
     }
   }
 
+  // ✅ Google login redirect
+  const handleGoogleLogin = () => {
+  const backendURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+  console.log("Redirecting to:", `${backendURL}/api/auth/google`);
+  window.location.href = `${backendURL}/api/auth/google`;
+};
+
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
         </div>
       </div>
 
@@ -113,17 +120,37 @@ const Login = () => {
                 {loading ? "Signing in..." : "Sign In"}
               </button>
             </div>
-            <div className="text-center text-sm text-gray-600">
-                Don&apos;t have an account?{" "}
-                <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                  Sign Up
-                </Link>
-              </div>
-
           </form>
+
+          {/* Divider */}
+          <div className="my-4 text-center text-sm text-gray-500">or</div>
+
+          {/* Google Login Button */}
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full h-11 flex items-center justify-center border border-gray-300 rounded-md bg-white shadow-sm hover:shadow-md transition"
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src="https://developers.google.com/identity/images/g-logo.png"
+                alt="Google logo"
+                className="w-5 h-5"
+              />
+              <span className="text-sm text-gray-700 font-medium">Sign in with Google</span>
             </div>
+          </button>
+
+
+          {/* Sign Up Link */}
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign Up
+            </Link>
           </div>
         </div>
+      </div>
+    </div>
   )
 }
 
