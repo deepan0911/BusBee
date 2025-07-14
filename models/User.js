@@ -43,11 +43,10 @@ const userSchema = new mongoose.Schema(
         ref: "Booking",
       },
     ],
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true, // Allows null + unique combo
-    },
+    googleId: { type: String },
+  name: { type: String },
+  email: { type: String },
+  role: { type: String, default: "Customer" }
   },
   {
     timestamps: true,

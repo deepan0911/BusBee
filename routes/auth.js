@@ -8,15 +8,13 @@ const router = express.Router();
 
 // ─────── JWT BASED ─────────────────────
 
-// Register
+// @route   POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, phone, role = "user" } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const user = new User({ name, email, password, phone, role });
     await user.save();
@@ -40,7 +38,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login
+// @route   POST /api/auth/login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -69,34 +67,28 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Get current user
+// @route   GET /api/auth/me
 router.get("/me", auth, async (req, res) => {
   try {
-    res.json({
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        phone: req.user.phone,
-        role: req.user.role,
-      },
-    });
+    const user = await User.findById(req.user._id).select("-password");
+    res.json({ user });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ─────── GOOGLE OAUTH ─────────────────────
+// ─────── GOOGLE OAUTH WITH JWT ─────────────────────
 
-// @route GET /api/auth/google
+// @route   GET /api/auth/google
 router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    prompt: "select_account", // 👈 This line forces account chooser every time
+    prompt: "select_account",
   })
-)
-// @route GET /api/auth/google/callback
+);
+
+// @route   GET /api/auth/google/callback
 router.get(
   "/google/callback",
   passport.authenticate("google", {
@@ -105,14 +97,13 @@ router.get(
   }),
   async (req, res) => {
     try {
-      // ✅ `req.user` is already the Mongoose user
       const user = req.user;
 
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: "30d",
       });
 
-      // ✅ Redirect to frontend with token
+      // Redirect to frontend with JWT token in query
       res.redirect(`${process.env.CLIENT_URL}/google-success?token=${token}`);
     } catch (err) {
       res.redirect(`${process.env.CLIENT_URL}/login?error=OAuthFailed`);
@@ -120,11 +111,10 @@ router.get(
   }
 );
 
-// Optional: logout
+// No session-based logout needed
 router.get("/logout", (req, res) => {
-  req.logout(() => {
-    res.redirect(`${process.env.CLIENT_URL}/`);
-  });
+  // No session, just tell frontend to clear token
+  res.status(200).json({ message: "Logout handled on client (JWT cleared)" });
 });
 
 module.exports = router;

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect, useRef } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Search, MapPin, Calendar, Shield, Clock, Star } from "lucide-react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import Chatbot from "../components/ChatBot"
+import toast from "react-hot-toast";
 
 const Home = () => {
 
@@ -22,7 +23,17 @@ const Home = () => {
   const [openFAQ, setOpenFAQ] = useState(null)
 
   const navigate = useNavigate()
+  const location = useLocation();
+  const toastShownRef = useRef(false);
 
+  useEffect(() => {
+    if (location.state?.googleLoginSuccess && !toastShownRef.current) {
+      toast.success("Login successful!");
+      toastShownRef.current = true; // ✅ Block further toasts
+      window.history.replaceState({}, document.title); // clear state
+    }
+  }, [location.state]);
+  
   const routes = [
     { from: "Mumbai", to: "Pune" },
     { from: "Delhi", to: "Jaipur" },

@@ -1,52 +1,36 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("../models/User");
-require("dotenv").config();
+const User = require("../models/User"); // your mongoose user model
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+passport.deserializeUser((id, done) => {
+  User.findById(id).then(user => done(null, user));
+});
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/callback", // must match backend route
+      callbackURL: "/api/auth/google/callback"
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Check if user already exists
-        let existingUser = await User.findOne({ email: profile.emails[0].value });
-
-        if (!existingUser) {
-          // Create new user
-          existingUser = await User.create({
+        console.log("Google profile:", profile); // ✅ DEBUG
+        let user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+          user = await User.create({
+            googleId: profile.id,
             name: profile.displayName,
-            email: profile.emails[0].value,
-            avatar: profile.photos[0].value,
-            isVerified: true,
-            password: "google-oauth", // required field in schema, placeholder
-            phone: "N/A", // required field in schema, you can update later
+            email: profile.emails[0].value
           });
         }
-
-        return done(null, existingUser);
+        done(null, user);
       } catch (err) {
-        console.error("❌ Google strategy error:", err);
-        return done(err, null);
+        done(err, null);
       }
     }
   )
 );
-
-// Serialize user for session (not used with JWT, but required by Passport)
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-// Deserialize user
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});

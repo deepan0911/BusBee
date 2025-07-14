@@ -1,55 +1,48 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
-import { Eye, EyeOff } from "lucide-react"
-import toast from "react-hot-toast"
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const { login, loginWithGoogle } = useAuth(); // ✅ include Google login from context
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    })
-  }
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const response = await login(formData.email, formData.password)
-      toast.success("Login successful!")
+      const response = await login(formData.email, formData.password);
+      toast.success("Login successful!");
 
       if (response.user.role === "admin") {
-        navigate("/admin/dashboard")
+        navigate("/admin/dashboard");
       } else {
-        navigate("/")
+        navigate("/");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed")
+      toast.error(error?.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  // ✅ Google login redirect
-  const handleGoogleLogin = () => {
-  const backendURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-  console.log("Redirecting to:", `${backendURL}/api/auth/google`);
-  window.location.href = `${backendURL}/api/auth/google`;
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -127,7 +120,7 @@ const Login = () => {
 
           {/* Google Login Button */}
           <button
-            onClick={handleGoogleLogin}
+            onClick={loginWithGoogle} // ✅ use context function
             className="w-full h-11 flex items-center justify-center border border-gray-300 rounded-md bg-white shadow-sm hover:shadow-md transition"
           >
             <div className="flex items-center gap-3">
@@ -140,7 +133,6 @@ const Login = () => {
             </div>
           </button>
 
-
           {/* Sign Up Link */}
           <div className="mt-6 text-center text-sm text-gray-600">
             Don&apos;t have an account?{" "}
@@ -151,7 +143,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

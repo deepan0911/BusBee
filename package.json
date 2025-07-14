@@ -33,7 +33,9 @@
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.1",
     "puppeteer": "^24.11.2",
-    "razorpay": "^2.9.6"
+    "razorpay": "^2.9.6",
+    "react-hot-toast": "^2.5.2",
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
