@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const puppeteer = require('puppeteer');
 
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
   port: process.env.EMAIL_PORT || 465,
   secure: true,
@@ -35,10 +35,17 @@ const findChromeExecutable = () => {
       if (versions.length > 0) {
         // Sort versions to get the latest one
         const latestVersion = versions.sort().reverse()[0];
-        const chromePath = path.join(cacheDir, latestVersion, 'chrome');
-        if (fs.existsSync(chromePath)) {
-          console.log(`✅ Found Chrome at: ${chromePath}`);
-          return chromePath;
+        // Try both possible paths
+        const chromePaths = [
+          path.join(cacheDir, latestVersion, 'chrome-linux64', 'chrome'),
+          path.join(cacheDir, latestVersion, 'chrome')
+        ];
+        
+        for (const chromePath of chromePaths) {
+          if (fs.existsSync(chromePath)) {
+            console.log(`✅ Found Chrome at: ${chromePath}`);
+            return chromePath;
+          }
         }
       }
     }
