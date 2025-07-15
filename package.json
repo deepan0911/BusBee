@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "seed": "node scripts/seedData.js",
     "build": "cd frontend && npm install && npm run build",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "install-chrome": "npx puppeteer browsers install chrome",
+    "prestart": "npm run install-chrome",
+    "postinstall": "npm run install-chrome"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
