@@ -66,8 +66,8 @@ JWT_SECRET=K8f2Nx9mP4qR7sT1vW3yZ5bC8eH6jL9n
 PORT=5000
 
 # Email Configuration
-EMAIL_USER=deepann0911@gmail.com
-EMAIL_PASS=@#09112004
+EMAIL_USER="your-email-id"
+EMAIL_PASS="your-password" 
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 
