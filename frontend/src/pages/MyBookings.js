@@ -11,6 +11,7 @@ const MyBookings = () => {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [cancellingBooking, setCancellingBooking] = useState(null)
+  const [confirmModal, setConfirmModal] = useState({ show: false, id: null })
 
   useEffect(() => {
     fetchBookings()
@@ -27,13 +28,15 @@ const MyBookings = () => {
     }
   }
 
-  const handleCancelBooking = async (bookingId) => {
-   if (!window.confirm("Are you sure you want to Cancel ticket? 10% will be deducted.")) {
-   return;
+  const handleCancelBooking = (bookingId) => {
+    setConfirmModal({ show: true, id: bookingId })
   }
 
-
+  const confirmCancelBooking = async () => {
+    const bookingId = confirmModal.id
     setCancellingBooking(bookingId)
+    setConfirmModal({ show: false, id: null }) // Close modal immediately
+
     try {
       await axios.put(`/api/bookings/${bookingId}/cancel`)
       toast.success("Booking cancelled successfully")
@@ -58,28 +61,28 @@ const MyBookings = () => {
     }
   }
 
-        const canCancelBooking = (booking) => {
-          // Extract journey date (without time)
-          const journeyDateOnly = new Date(booking.journeyDate)
+  const canCancelBooking = (booking) => {
+    // Extract journey date (without time)
+    const journeyDateOnly = new Date(booking.journeyDate)
 
-          // Parse departure time (e.g., "10:30")
-          const [hours, minutes] = booking.bus.schedule.departureTime.split(":").map(Number)
+    // Parse departure time (e.g., "10:30")
+    const [hours, minutes] = booking.bus?.schedule?.departureTime?.split(":").map(Number) || [0, 0]
 
-          // Create a full Date object for journey datetime
-          const journeyDateTime = new Date(
-            journeyDateOnly.getFullYear(),
-            journeyDateOnly.getMonth(),
-            journeyDateOnly.getDate(),
-            hours,
-            minutes,
-          )
+    // Create a full Date object for journey datetime
+    const journeyDateTime = new Date(
+      journeyDateOnly.getFullYear(),
+      journeyDateOnly.getMonth(),
+      journeyDateOnly.getDate(),
+      hours,
+      minutes,
+    )
 
-          const now = new Date()
-          const timeDiff = journeyDateTime.getTime() - now.getTime()
-          const hoursDiff = timeDiff / (1000 * 3600)
+    const now = new Date()
+    const timeDiff = journeyDateTime.getTime() - now.getTime()
+    const hoursDiff = timeDiff / (1000 * 3600)
 
-          return booking.status === "confirmed" && hoursDiff > 4
-        }
+    return booking.status === "confirmed" && hoursDiff > 4
+  }
 
 
 
@@ -122,7 +125,7 @@ const MyBookings = () => {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{booking.bus.operatorName}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{booking.bus?.operatorName || 'Unknown Operator'}</h3>
                       <p className="text-gray-600">Booking ID: {booking.bookingId}</p>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -137,7 +140,7 @@ const MyBookings = () => {
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 text-gray-400 mr-2" />
                       <div>
-                        <p className="font-medium">{booking.bus.route.from}</p>
+                        <p className="font-medium">{booking.bus?.route?.from || 'Unknown'}</p>
                         <p className="text-sm text-gray-500">From</p>
                       </div>
                     </div>
@@ -145,7 +148,7 @@ const MyBookings = () => {
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 text-gray-400 mr-2" />
                       <div>
-                        <p className="font-medium">{booking.bus.route.to}</p>
+                        <p className="font-medium">{booking.bus?.route?.to || 'Unknown'}</p>
                         <p className="text-sm text-gray-500">To</p>
                       </div>
                     </div>
@@ -161,7 +164,7 @@ const MyBookings = () => {
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 text-gray-400 mr-2" />
                       <div>
-                        <p className="font-medium">{booking.bus.schedule.departureTime}</p>
+                        <p className="font-medium">{booking.bus?.schedule?.departureTime || 'Unknown'}</p>
                         <p className="text-sm text-gray-500">Departure</p>
                       </div>
                     </div>
@@ -188,9 +191,9 @@ const MyBookings = () => {
 
                       {canCancelBooking(booking) && (
                         <button
-                            onClick={() => handleCancelBooking(booking._id)}
-                            disabled={cancellingBooking === booking._id}
-                            className={`
+                          onClick={() => handleCancelBooking(booking._id)}
+                          disabled={cancellingBooking === booking._id}
+                          className={`
                               flex items-center gap-2
                               px-4 py-1.5
                               border border-red-300
@@ -201,14 +204,14 @@ const MyBookings = () => {
                               disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
                               transition-all duration-200 ease-in-out
                             `}
-                          >
-                            {cancellingBooking === booking._id ? (
-                              <div className="spinner h-4 w-4 animate-spin text-red-500" />
-                            ) : (
-                              <X className="h-4 w-4" />
-                            )}
-                            Cancel
-                          </button>
+                        >
+                          {cancellingBooking === booking._id ? (
+                            <div className="spinner h-4 w-4 animate-spin text-red-500" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                          Cancel
+                        </button>
                       )}
                     </div>
                   </div>
@@ -218,7 +221,31 @@ const MyBookings = () => {
           </div>
         )}
       </div>
-      <Chatbot/>
+      <Chatbot />
+
+      {/* Cancellation Confirmation Modal */}
+      {confirmModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Cancellation</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to cancel this ticket? 10% will be deducted.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setConfirmModal({ show: false, id: null })}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                No, Keep
+              </button>
+              <button
+                onClick={confirmCancelBooking}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

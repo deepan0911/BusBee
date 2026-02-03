@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
-import { MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Shield } from "lucide-react"
+import { MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Shield, Disc } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuth } from "../context/AuthContext"
 import Chatbot from "../components/ChatBot"
@@ -45,18 +45,14 @@ const BusDetails = () => {
   }
 
   const getAmenityIcon = (amenity) => {
-    switch (amenity.toLowerCase()) {
-      case "wifi":
-        return <Wifi className="h-5 w-5" />
-      case "tv":
-        return <Tv className="h-5 w-5" />
-      case "refreshments":
-        return <Coffee className="h-5 w-5" />
-      case "blanket":
-        return <Shield className="h-5 w-5" />
-      default:
-        return <Shield className="h-5 w-5" />
-    }
+    const key = amenity.toLowerCase()
+    if (key.includes("wifi")) return <Wifi className="h-5 w-5" />
+    if (key.includes("charging")) return <Clock className="h-5 w-5" />
+    if (key.includes("water")) return <Coffee className="h-5 w-5" />
+    if (key.includes("blanket")) return <Shield className="h-5 w-5" />
+    if (key.includes("tv")) return <Tv className="h-5 w-5" />
+    if (key.includes("coffee") || key.includes("refreshment")) return <Coffee className="h-5 w-5" />
+    return <Disc className="h-5 w-5" />
   }
 
   if (loading) {
@@ -167,12 +163,25 @@ const BusDetails = () => {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-3">Amenities</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {bus.amenities?.map((amenity, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-gray-700">
-                      {getAmenityIcon(amenity)}
-                      <span className="text-sm">{amenity}</span>
-                    </div>
-                  ))}
+                  {bus.amenities && !Array.isArray(bus.amenities) ? (
+                    Object.entries(bus.amenities)
+                      .filter(([_, value]) => value)
+                      .map(([key], index) => (
+                        <div key={index} className="flex items-center space-x-2 text-gray-700">
+                          {getAmenityIcon(key)}
+                          <span className="text-sm capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                        </div>
+                      ))
+                  ) : Array.isArray(bus.amenities) ? (
+                    bus.amenities.map((amenity, index) => (
+                      <div key={index} className="flex items-center space-x-2 text-gray-700">
+                        {getAmenityIcon(amenity)}
+                        <span className="text-sm">{amenity}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No amenities listed</p>
+                  )}
                 </div>
               </div>
 
@@ -256,7 +265,7 @@ const BusDetails = () => {
                 </div>
               </div>
 
-             <button
+              <button
                 onClick={handleSelectSeats}
                 disabled={bus.availableSeats === 0}
                 className={`w-full h-12 px-4 rounded-md text-lg font-semibold transition duration-200

@@ -17,6 +17,25 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ Intercept 401 responses to auto-logout
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          delete axios.defaults.headers.common["Authorization"];
+          setUser(null);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
   // ✅ Set token if available on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -33,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.get("/api/auth/me");
       setUser(response.data.user);
+      return response.data.user;
     } catch (error) {
       // Token might be expired or invalid
       localStorage.removeItem("token");
@@ -79,7 +99,7 @@ export const AuthProvider = ({ children }) => {
     try {
       localStorage.setItem("token", token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      await fetchUser(); // fetch user data after setting token
+      return await fetchUser(); // fetch user data after setting token
     } catch {
       logout();
     }

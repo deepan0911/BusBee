@@ -5,9 +5,25 @@ const seatSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["seater", "sleeper"],
+    default: "seater",
+  },
+  deck: {
+    type: String, // 'lower' or 'upper'
+    default: "lower",
+  },
+  row: Number,
+  col: Number,
   isBooked: {
     type: Boolean,
     default: false,
+  },
+  gender: {
+    type: String, // 'male' or 'female' (for strict booking)
+    enum: ["male", "female", null],
+    default: null
   },
   bookedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -24,10 +40,14 @@ const busSchema = new mongoose.Schema(
     busNumber: {
       type: String,
       required: true,
-      unique: true,
     },
     operatorName: {
       type: String,
+      required: true,
+    },
+    operatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     busType: {
@@ -88,16 +108,56 @@ const busSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    amenities: [
-      {
-        type: String,
-      },
-    ],
-    images: [
-      {
-        type: String,
-      },
-    ],
+    // Enhanced Fields for Operator Dashboard
+    priceSeater: Number,
+    priceSleeper: Number,
+    amenities: {
+      wifi: { type: Boolean, default: false },
+      chargingPoint: { type: Boolean, default: false },
+      waterBottle: { type: Boolean, default: false },
+      blanket: { type: Boolean, default: false },
+      readingLight: { type: Boolean, default: false },
+      emergencyExit: { type: Boolean, default: false },
+      gpsTracking: { type: Boolean, default: false },
+      cctv: { type: Boolean, default: false }
+    },
+    boardingPoints: [{
+      location: String,
+      time: String
+    }],
+    droppingPoints: [{
+      location: String,
+      time: String
+    }],
+    cancellationPolicy: {
+      allowed: { type: Boolean, default: true },
+      chargeType: { type: String, default: "percentage" },
+      chargeAmount: Number,
+      refundPolicy: String,
+      timeLimit: String
+    },
+    operatorInfo: {
+      contactNumber: String,
+      emergencyContact: String,
+      supportEmail: String
+    },
+    additionalDetails: {
+      restStops: String,
+      restStopDuration: String,
+      liveTracking: { type: Boolean, default: false },
+      partialBooking: { type: Boolean, default: true }
+    },
+    safetyFeatures: {
+      fireExtinguisher: { type: Boolean, default: false },
+      firstAidKit: { type: Boolean, default: false },
+      seatBelts: { type: Boolean, default: false }
+    },
+    driverDetails: {
+      name: String,
+      phone: String,
+      license: String
+    },
+    images: [String],
     isActive: {
       type: Boolean,
       default: true,
@@ -105,6 +165,12 @@ const busSchema = new mongoose.Schema(
     rating: {
       type: Number,
       default: 0,
+    },
+    layoutConfig: {
+      rows: Number,
+      colsLeft: Number,
+      colsRight: Number,
+      upperDeck: Boolean
     },
     reviews: [
       {

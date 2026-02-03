@@ -15,6 +15,7 @@ const busRoutes = require("./routes/bus");
 const bookingRoutes = require("./routes/booking");
 const adminRoutes = require("./routes/admin");
 const paymentRoutes = require("./routes/payment");
+const operatorRoutes = require("./routes/operator");
 
 
 
@@ -58,6 +59,7 @@ app.use("/api/buses", busRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/operator", operatorRoutes);
 
 // ─── Serve Frontend in Production ─────────
 if (process.env.NODE_ENV === "production") {

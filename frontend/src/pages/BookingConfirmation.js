@@ -16,33 +16,33 @@ const BookingConfirmation = () => {
   const printRef = useRef()
 
   useEffect(() => {
-  const fetchBookingDetails = async () => {
-    try {
-      const response = await axios.get(`/api/bookings/${bookingId}`)
-      setBooking(response.data)
-      setLoading(false)
-    } catch (error) {
-      toast.error("Failed to fetch booking details")
-      setLoading(false)
+    const fetchBookingDetails = async () => {
+      try {
+        const response = await axios.get(`/api/bookings/${bookingId}`)
+        setBooking(response.data)
+        setLoading(false)
+      } catch (error) {
+        toast.error("Failed to fetch booking details")
+        setLoading(false)
+      }
     }
-  }
 
-  fetchBookingDetails()
-  window.scrollTo(0, 0)
-}, [bookingId])
+    fetchBookingDetails()
+    window.scrollTo(0, 0)
+  }, [bookingId])
 
 
 
   const handleDownloadTicket = async () => {
-   if (!printRef.current) return
+    if (!printRef.current) return
 
-     try {
-     const element = printRef.current
-     // Capture the element as a canvas
-     const canvas = await html2canvas(element, {
-      scale: 2, // Increase scale for better resolution
-       useCORS: true, // If you have external images/fonts, ensure this is set
-       logging: true, // For debugging in console
+    try {
+      const element = printRef.current
+      // Capture the element as a canvas
+      const canvas = await html2canvas(element, {
+        scale: 2, // Increase scale for better resolution
+        useCORS: true, // If you have external images/fonts, ensure this is set
+        logging: true, // For debugging in console
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 1.0); // Use JPEG for smaller file size, adjust quality
@@ -61,30 +61,30 @@ const BookingConfirmation = () => {
       let position = 0; // Y-position on the PDF page
 
       // If the content fits on one page
-            if (imgScaledHeight <= pdfHeight) {
-          pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgScaledHeight);
-          } else {
+      if (imgScaledHeight <= pdfHeight) {
+        pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgScaledHeight);
+      } else {
         // Content spans multiple pages
-          while (position < imgScaledHeight) {
-            pdf.addImage(imgData, "JPEG", 0, position * -1, pdfWidth, imgScaledHeight);  
-            position += pdfHeight;
+        while (position < imgScaledHeight) {
+          pdf.addImage(imgData, "JPEG", 0, position * -1, pdfWidth, imgScaledHeight);
+          position += pdfHeight;
           // Add a new page if there's more content to draw, and it's not the last piece
-            if (position < imgScaledHeight) {
+          if (position < imgScaledHeight) {
             pdf.addPage();
-            }
+          }
         }
-        }
+      }
 
       pdf.save(`Booking-${booking.bookingId}.pdf`);
 
       toast.success("Ticket downloaded!");
-      } catch (error) {
+    } catch (error) {
       console.error("Failed to download ticket", error);
       toast.error("Failed to download ticket");
-      }
-      };
+    }
+  };
 
-    if (loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -106,8 +106,7 @@ const BookingConfirmation = () => {
   }
 
   return (
-     <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="flex-grow overflow-y-auto py-8">
+    <div className="bg-gray-50 pb-20 pt-8">
       <div
         className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-sm p-8"
         ref={printRef}
@@ -157,6 +156,24 @@ const BookingConfirmation = () => {
                 <span className="text-gray-600">Departure Time</span>
                 <span className="font-medium">{booking.bus.schedule.departureTime}</span>
               </div>
+              {booking.boardingPoint && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Boarding Point</span>
+                  <div className="text-right">
+                    <span className="block font-medium">{booking.boardingPoint.location}</span>
+                    <span className="text-sm text-gray-500">{booking.boardingPoint.time}</span>
+                  </div>
+                </div>
+              )}
+              {booking.droppingPoint && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Dropping Point</span>
+                  <div className="text-right">
+                    <span className="block font-medium">{booking.droppingPoint.location}</span>
+                    <span className="text-sm text-gray-500">{booking.droppingPoint.time}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -235,27 +252,27 @@ const BookingConfirmation = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 px-4 sm:px-6 lg:px-8">
-          <button
-            onClick={handleDownloadTicket}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded flex items-center justify-center"
-          >
-            <Download className="h-5 w-5 mr-2" />
-            Download Ticket
-          </button>
+        <button
+          onClick={handleDownloadTicket}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded flex items-center justify-center"
+        >
+          <Download className="h-5 w-5 mr-2" />
+          Download Ticket
+        </button>
 
-          <Link
-            to="/my-bookings"
-            className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded flex items-center justify-center"
-          >
-            View All Bookings
-          </Link>
+        <Link
+          to="/my-bookings"
+          className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded flex items-center justify-center"
+        >
+          View All Bookings
+        </Link>
 
-          <Link
-            to="/"
-            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded flex items-center justify-center"
-          >
-            Book Another Ticket
-          </Link>
+        <Link
+          to="/"
+          className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded flex items-center justify-center"
+        >
+          Book Another Ticket
+        </Link>
 
       </div>
 
@@ -269,8 +286,7 @@ const BookingConfirmation = () => {
           <li>• A confirmation email has been sent to your registered email address</li>
         </ul>
       </div>
-      <Chatbot/>
-    </div>
+      <Chatbot />
     </div>
   )
 }

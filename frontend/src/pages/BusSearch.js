@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
-import { Filter, MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Calendar } from "lucide-react"
+import { Filter, MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Calendar, Shield, Disc } from "lucide-react"
 import toast from "react-hot-toast"
 import Chatbot from "../components/ChatBot"
 
@@ -78,16 +78,14 @@ const BusSearch = () => {
   }
 
   const getAmenityIcon = (amenity) => {
-    switch (amenity.toLowerCase()) {
-      case "wifi":
-        return <Wifi className="h-4 w-4" />
-      case "tv":
-        return <Tv className="h-4 w-4" />
-      case "refreshments":
-        return <Coffee className="h-4 w-4" />
-      default:
-        return null
-    }
+    const key = amenity.toLowerCase()
+    if (key.includes("wifi")) return <Wifi className="h-4 w-4" />
+    if (key.includes("charging")) return <Clock className="h-4 w-4" />
+    if (key.includes("water")) return <Coffee className="h-4 w-4" />
+    if (key.includes("blanket")) return <Shield className="h-4 w-4" />
+    if (key.includes("tv")) return <Tv className="h-4 w-4" />
+    if (key.includes("coffee") || key.includes("refreshment")) return <Coffee className="h-4 w-4" />
+    return <Disc className="h-4 w-4" />
   }
 
   const formatDate = (dateString) => {
@@ -280,7 +278,7 @@ const BusSearch = () => {
                             <p className="text-sm text-gray-500">{to}</p>
                             {bus.schedule.arrivalDate &&
                               new Date(bus.schedule.arrivalDate).toDateString() !==
-                                new Date(bus.schedule.departureDate).toDateString() && (
+                              new Date(bus.schedule.departureDate).toDateString() && (
                                 <p className="text-xs text-orange-600">+1 day</p>
                               )}
                           </div>
@@ -300,26 +298,38 @@ const BusSearch = () => {
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {bus.amenities?.slice(0, 3).map((amenity, index) => (
-                              <div key={index} className="flex items-center text-xs text-gray-500">
-                                {getAmenityIcon(amenity)}
-                                <span className="ml-1">{amenity}</span>
-                              </div>
-                            ))}
+                            {bus.amenities && !Array.isArray(bus.amenities) ? (
+                              Object.entries(bus.amenities)
+                                .filter(([_, value]) => value)
+                                .slice(0, 3)
+                                .map(([key], index) => (
+                                  <div key={index} className="flex items-center text-xs text-gray-500">
+                                    {getAmenityIcon(key)}
+                                    <span className="ml-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                                  </div>
+                                ))
+                            ) : Array.isArray(bus.amenities) ? (
+                              bus.amenities.slice(0, 3).map((amenity, index) => (
+                                <div key={index} className="flex items-center text-xs text-gray-500">
+                                  {getAmenityIcon(amenity)}
+                                  <span className="ml-1">{amenity}</span>
+                                </div>
+                              ))
+                            ) : null}
                           </div>
                         </div>
 
                         <button
-                              onClick={() => handleBookNow(bus._id)}
-                              disabled={bus.availableSeats === 0}
-                              className={`px-4 py-1.5 rounded text-sm font-medium transition 
+                          onClick={() => handleBookNow(bus._id)}
+                          disabled={bus.availableSeats === 0}
+                          className={`px-4 py-1.5 rounded text-sm font-medium transition 
                                 ${bus.availableSeats === 0
-                                  ? "bg-gray-400 text-white cursor-not-allowed"
-                                  : "bg-blue-600 hover:bg-blue-700 text-white"}
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700 text-white"}
                               `}
-                            >
-                              {bus.availableSeats === 0 ? "Bus Full" : "Select Seats"}
-                            </button>
+                        >
+                          {bus.availableSeats === 0 ? "Bus Full" : "Select Seats"}
+                        </button>
                       </div>
                     </div>
                   </div>

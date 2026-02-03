@@ -59,6 +59,14 @@ const bookingSchema = new mongoose.Schema(
       email: String,
       phone: String,
     },
+    boardingPoint: {
+      location: { type: String },
+      time: { type: String },
+    },
+    droppingPoint: {
+      location: { type: String },
+      time: { type: String },
+    },
   },
   {
     timestamps: true,

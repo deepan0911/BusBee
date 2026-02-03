@@ -87,7 +87,7 @@ const AdminRoutes = () => {
                   <span className="text-gray-600">Available Buses</span>
                   <span className="font-medium flex items-center">
                     <Bus className="h-4 w-4 mr-1" />
-                    {route.buses.length}
+                    {new Set(route.buses.map(b => b.busNumber)).size}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -101,14 +101,15 @@ const AdminRoutes = () => {
               <div className="border-t pt-4">
                 <h4 className="font-medium mb-2">Operators:</h4>
                 <div className="space-y-1">
-                  {route.buses.slice(0, 3).map((bus, busIndex) => (
-                    <div key={busIndex} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{bus.operatorName}</span>
-                      <span className="text-gray-500">{bus.busType}</span>
+                  {Array.from(new Set(route.buses.map(b => b.operatorName))).slice(0, 3).map((operatorName, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{operatorName}</span>
+                      {/* Finds the first bus type for this operator simply for display */}
+                      <span className="text-gray-500">{route.buses.find(b => b.operatorName === operatorName)?.busType}</span>
                     </div>
                   ))}
-                  {route.buses.length > 3 && (
-                    <div className="text-sm text-blue-600">+{route.buses.length - 3} more operators</div>
+                  {new Set(route.buses.map(b => b.operatorName)).size > 3 && (
+                    <div className="text-sm text-blue-600">+{new Set(route.buses.map(b => b.operatorName)).size - 3} more operators</div>
                   )}
                 </div>
               </div>

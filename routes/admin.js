@@ -83,4 +83,70 @@ router.get("/users", adminAuth, async (req, res) => {
   }
 })
 
+// Get all operators
+router.get("/operators", adminAuth, async (req, res) => {
+  try {
+    const operators = await User.find({ role: "operator" }).select("-password").sort({ createdAt: -1 })
+    res.json(operators)
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message })
+  }
+})
+
+// Verify/Unverify Operator
+router.put("/users/:id/verify-operator", adminAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Toggle verification
+    user.isVerified = !user.isVerified;
+    await user.save();
+
+    res.json({ message: `Operator ${user.isVerified ? 'verified' : 'unverified'} successfully`, user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+})
+
+// Create new operator
+router.post("/operators", adminAuth, async (req, res) => {
+  try {
+    const { name, email, password, phone, companyName } = req.body;
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User already exists with this email" });
+    }
+
+    user = new User({
+      name,
+      email,
+      password, // Will be hashed by pre-save hook
+      phone,
+      role: 'operator',
+      isVerified: true, // Auto-verify admin created operators
+      // You might want to add companyName to User model or a separate Profile model if needed. 
+      // For now, let's assume 'name' is the company name or contact person, 
+      // but User model doesn't have 'companyName'. Let's add it to 'name' or separate field if Schema allows.
+    });
+
+    // If you strictly need Company Name, ideally update User schema. 
+    // For this MVP, we can append it to name or just store in name.
+    // Let's assume the requirement "Company Name" implies we should probably store it.
+    // But since I cannot change Schema here easily without potentially breaking other things, 
+    // I will use 'name' as the display name (Company Name).
+
+    // Actually, let's check the schema again. It has 'name'. 
+    // We can use 'name' for "Company Name" for operators.
+
+    await user.save();
+
+    res.status(201).json({ message: "Operator created successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 module.exports = router

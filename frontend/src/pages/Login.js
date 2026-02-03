@@ -34,6 +34,8 @@ const Login = () => {
 
       if (response.user.role === "admin") {
         navigate("/admin/dashboard");
+      } else if (response.user.role === "operator") {
+        navigate("/operator/dashboard");
       } else {
         navigate("/");
       }
@@ -106,9 +108,8 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 {loading ? "Signing in..." : "Sign In"}
               </button>

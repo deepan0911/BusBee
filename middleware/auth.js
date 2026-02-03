@@ -21,7 +21,11 @@ const auth = async (req, res, next) => {
     req.user = user
     next()
   } catch (error) {
-    console.error("Auth middleware error:", error)
+    if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+      console.warn(`Auth failed: ${error.message}`)
+    } else {
+      console.error("Auth middleware error:", error)
+    }
     res.status(401).json({ message: "Token is not valid" })
   }
 }
@@ -43,4 +47,19 @@ const adminAuth = async (req, res, next) => {
   }
 }
 
-module.exports = { auth, adminAuth }
+const operatorAuth = async (req, res, next) => {
+  try {
+    await auth(req, res, () => {
+      if (req.user.role !== "operator" && req.user.role !== "admin") {
+        // Admins can often do operator actions, or we strictly separate.
+        // Let's allow Admins to act as Operators for debugging/supervision.
+        return res.status(403).json({ message: "Access denied. Operator only." })
+      }
+      next()
+    })
+  } catch (error) {
+    res.status(401).json({ message: "Authorization failed" })
+  }
+}
+
+module.exports = { auth, adminAuth, operatorAuth }

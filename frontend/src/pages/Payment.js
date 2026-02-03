@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
 // ✅ Razorpay Script Loader
 const loadRazorpayScript = () => {
@@ -30,14 +31,14 @@ const Payment = () => {
       console.log("🔑 token:", token);
 
       if (!amount || !bookingData || !token) {
-        alert("Invalid payment session. Please try again.");
+        toast.error("Invalid payment session. Please try again.");
         navigate("/");
         return;
       }
 
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
-        alert("Razorpay SDK failed to load");
+        toast.error("Razorpay SDK failed to load");
         return;
       }
 
@@ -45,7 +46,7 @@ const Payment = () => {
         const { data: order } = await axios.post("/api/payment/create-order", { amount });
 
         const options = {
-          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+          key: order.key_id,
           amount: order.amount,
           currency: order.currency,
           name: "Bus Ticket Reservation",
@@ -70,25 +71,25 @@ const Payment = () => {
 
                 console.log("📦 Booking Response:", bookingRes.data);
                 if (bookingRes.data && bookingRes.data.booking && bookingRes.data.booking._id) {
-                  alert("✅ Booking confirmed!");
+                  toast.success("Booking confirmed!");
                   navigate(`/booking-confirmation/${bookingRes.data.booking._id}`);
                 } else {
-                  alert("⚠️ Payment succeeded, but booking failed.");
+                  toast.error("Payment succeeded, but booking failed.");
                   navigate("/");
                 }
               } else {
-                alert("❌ Payment verification failed");
+                toast.error("Payment verification failed");
                 navigate("/");
               }
             } catch (err) {
               console.error("❌ Payment or booking error:", err);
-              alert("❌ Payment verification failed");
+              toast.error("Payment verification failed");
               navigate("/");
             }
           },
           modal: {
             ondismiss: () => {
-              alert("❌ Payment was cancelled");
+              toast.error("Payment was cancelled");
               navigate("/");
             },
           },
@@ -99,7 +100,7 @@ const Payment = () => {
         rzp.open();
       } catch (error) {
         console.error("❌ Razorpay order error:", error);
-        alert("Payment could not be initiated");
+        toast.error("Payment could not be initiated");
         navigate("/");
       }
     };
@@ -109,10 +110,9 @@ const Payment = () => {
 
   return (
     <div className="flex flex-col items-center justify-center mt-32">
-  <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid border-r-transparent mb-4" />
-  <p className="text-gray-600 text-lg">Processing your payment...</p>
-</div>
-
+      <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid border-r-transparent mb-4" />
+      <p className="text-gray-600 text-lg">Processing your payment...</p>
+    </div>
   );
 };
 

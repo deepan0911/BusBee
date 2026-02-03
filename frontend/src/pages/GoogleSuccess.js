@@ -14,13 +14,19 @@ const GoogleSuccess = () => {
     const token = new URLSearchParams(window.location.search).get("token");
 
     if (token) {
-      loginWithToken(token).then(() => {
-        navigate("/", { state: { googleLoginSuccess: true } });
+      loginWithToken(token).then((user) => {
+        if (user && user.role === "admin") {
+          navigate("/admin/dashboard", { replace: true });
+        } else if (user && user.role === "operator") {
+          navigate("/operator/dashboard", { replace: true });
+        } else {
+          navigate("/", { state: { googleLoginSuccess: true } });
+        }
       });
     } else {
       navigate("/login");
     }
-  }, []);
+  }, [loginWithToken, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">

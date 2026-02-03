@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 import { Search, Filter, Eye, Download } from "lucide-react"
 import toast from "react-hot-toast"
@@ -12,15 +12,7 @@ const AdminBookings = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
 
-  useEffect(() => {
-    fetchBookings()
-  }, [])
-
-  useEffect(() => {
-    filterBookings()
-  }, [bookings, searchTerm, statusFilter])
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       const response = await axios.get("/api/admin/bookings")
       setBookings(response.data)
@@ -29,9 +21,9 @@ const AdminBookings = () => {
       toast.error("Failed to fetch bookings")
       setLoading(false)
     }
-  }
+  }, [])
 
-  const filterBookings = () => {
+  const filterBookings = useCallback(() => {
     let filtered = bookings
 
     if (searchTerm) {
@@ -49,7 +41,15 @@ const AdminBookings = () => {
     }
 
     setFilteredBookings(filtered)
-  }
+  }, [bookings, searchTerm, statusFilter])
+
+  useEffect(() => {
+    fetchBookings()
+  }, [fetchBookings])
+
+  useEffect(() => {
+    filterBookings()
+  }, [filterBookings])
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -158,52 +158,60 @@ const AdminBookings = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredBookings.map((booking) => (
-                  <tr key={booking._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{booking.bookingId}</div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(booking.bookingDate).toLocaleDateString()}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {booking.passengers.length} passenger{booking.passengers.length > 1 ? "s" : ""}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{booking.user?.name}</div>
-                        <div className="text-sm text-gray-500">{booking.user?.email}</div>
-                        <div className="text-sm text-gray-500">{booking.contactDetails?.phone}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {booking.bus?.route.from} → {booking.bus?.route.to}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(booking.journeyDate).toLocaleDateString()}
-                        </div>
-                        <div className="text-sm text-gray-500">{booking.bus?.operatorName}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">₹{booking.totalAmount}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900">
-                        <Eye className="h-4 w-4" />
-                      </button>
+                {filteredBookings.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-10 text-center text-gray-500">
+                      No bookings found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredBookings.map((booking) => (
+                    <tr key={booking._id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{booking.bookingId}</div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(booking.bookingDate).toLocaleDateString()}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {booking.passengers.length} passenger{booking.passengers.length > 1 ? "s" : ""}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{booking.user?.name}</div>
+                          <div className="text-sm text-gray-500">{booking.user?.email}</div>
+                          <div className="text-sm text-gray-500">{booking.contactDetails?.phone}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {booking.bus?.route.from} → {booking.bus?.route.to}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(booking.journeyDate).toLocaleDateString()}
+                          </div>
+                          <div className="text-sm text-gray-500">{booking.bus?.operatorName}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">₹{booking.totalAmount}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button className="text-blue-600 hover:text-blue-900">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -16,6 +16,9 @@ const Booking = () => {
   const [selectedSeats, setSelectedSeats] = useState([])
   const [route, setRoute] = useState({ from: "", to: "" })
   const [journeyDate, setJourneyDate] = useState("")
+  const [selectedBoarding, setSelectedBoarding] = useState(null)
+  const [selectedDropping, setSelectedDropping] = useState(null)
+
   const [loading, setLoading] = useState(true)
   const [bookingLoading] = useState(false)
   const { user } = useAuth()
@@ -48,6 +51,8 @@ const Booking = () => {
     const seats = JSON.parse(sessionStorage.getItem("selectedSeats") || "[]")
     const routeData = JSON.parse(sessionStorage.getItem("route") || "{}")
     const date = sessionStorage.getItem("journeyDate")
+    const storedBoarding = sessionStorage.getItem("selectedBoarding")
+    const storedDropping = sessionStorage.getItem("selectedDropping")
 
     console.log("📦 Session data:", { seats, routeData, date })
 
@@ -61,6 +66,8 @@ const Booking = () => {
     setSelectedSeats(seats)
     setRoute(routeData)
     setJourneyDate(date)
+    if (storedBoarding) setSelectedBoarding(JSON.parse(storedBoarding))
+    if (storedDropping) setSelectedDropping(JSON.parse(storedDropping))
 
     if (user) {
       console.log("👤 Pre-filling user data:", user.email)
@@ -71,41 +78,37 @@ const Booking = () => {
     fetchBusDetails()
   }, [id, user, setValue, navigate, fetchBusDetails])
 
- const onSubmit = async (data) => {
-  const passengers = selectedSeats.map((seat, index) => ({
-    name: data[`passenger_${index}_name`],
-    age: Number.parseInt(data[`passenger_${index}_age`]),
-    gender: data[`passenger_${index}_gender`],
-    seatNumber: seat,
-  }));
+  const onSubmit = async (data) => {
+    const passengers = selectedSeats.map((seat, index) => ({
+      name: data[`passenger_${index}_name`],
+      age: Number.parseInt(data[`passenger_${index}_age`]),
+      gender: data[`passenger_${index}_gender`],
+      seatNumber: seat,
+    }));
 
-  const bookingData = {
-    busId: id,
-    passengers,
-    journeyDate,
-    contactDetails: {
-      email: data.contactEmail,
-      phone: data.contactPhone,
-    },
-  };
+    const bookingData = {
+      busId: id,
+      passengers,
+      journeyDate,
+      contactDetails: {
+        email: data.contactEmail,
+        phone: data.contactPhone,
+      },
+      boardingPoint: selectedBoarding,
+      droppingPoint: selectedDropping
+    };
 
-  const totalAmount = selectedSeats.length * bus.price;
+    const totalAmount = selectedSeats.length * bus.price;
 
-  // ✅ Redirect to /payment with necessary data
+    // ✅ Redirect to /payment with necessary data
     navigate("/payment", {
-    state: {
-      amount: totalAmount,
-      bookingData,
-      token: localStorage.getItem("token"),
-    }
-  });
-
-
-};
-
-
-
-
+      state: {
+        amount: totalAmount,
+        bookingData,
+        token: localStorage.getItem("token"),
+      }
+    });
+  };
 
   if (loading) {
     return (
@@ -141,11 +144,11 @@ const Booking = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
+                <button onClick={() => navigate(-1)} className="text-blue-600 hover:text-blue-800 mr-4 font-medium">
+                  ← Back
+                </button>
                 <div className="flex items-center text-lg font-semibold">
                   <MapPin size={20} className="mr-2 text-blue-600" />
-                  <User size={20} className="mr-2" />
-                  <Phone size={20} className="mr-2" />
-                  <CreditCard size={20} className="mr-2" />
 
                   {route.from} → {route.to}
                 </div>
@@ -158,9 +161,7 @@ const Booking = () => {
                   })}
                 </div>
               </div>
-              <button onClick={() => navigate(-1)} className="text-blue-600 hover:text-blue-800">
-                ← Back
-              </button>
+
             </div>
           </div>
         </div>
@@ -169,6 +170,24 @@ const Booking = () => {
           {/* Booking Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+              {/* Boarding and Dropping Points Display */}
+              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h3 className="text-lg font-semibold mb-4">Boarding & Dropping</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <p className="text-sm text-gray-500 mb-1">Boarding Point</p>
+                    <p className="font-semibold">{selectedBoarding?.location || 'Not Selected'}</p>
+                    <p className="text-sm font-medium text-blue-600">{selectedBoarding?.time}</p>
+                  </div>
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <p className="text-sm text-gray-500 mb-1">Dropping Point</p>
+                    <p className="font-semibold">{selectedDropping?.location || 'Not Selected'}</p>
+                    <p className="text-sm font-medium text-blue-600">{selectedDropping?.time}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Contact Details */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -255,20 +274,7 @@ const Booking = () => {
                 </div>
               </div>
 
-              {/* Terms and Conditions */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-start">
-                  <input
-                    type="checkbox"
-                    {...register("terms", { required: "Please accept terms and conditions" })}
-                    className="mt-1 mr-3"
-                  />
-                  <div>
-                    <p className="text-sm text-gray-700">I agree to the Terms and Conditions and Privacy Policy</p>
-                    {errors.terms && <p className="text-red-500 text-sm mt-1">{errors.terms.message}</p>}
-                  </div>
-                </div>
-              </div>
+
             </form>
           </div>
 
@@ -316,22 +322,22 @@ const Booking = () => {
               </div>
 
               <button
-                  onClick={handleSubmit(onSubmit)}
-                  disabled={bookingLoading}
-                  className={`w-full h-12 px-5 rounded-md text-lg font-semibold flex items-center justify-center transition duration-200
+                onClick={handleSubmit(onSubmit)}
+                disabled={bookingLoading}
+                className={`w-full h-12 px-5 rounded-md text-lg font-semibold flex items-center justify-center transition duration-200
                     ${bookingLoading
-                      ? "bg-gray-400 text-white cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"}
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"}
                   `}
-                >
-                  {bookingLoading ? (
-                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Confirm Booking
-                    </>
-                  )}
-                </button>
+              >
+                {bookingLoading ? (
+                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Confirm Booking
+                  </>
+                )}
+              </button>
 
 
               <div className="mt-4 text-center">
@@ -341,8 +347,8 @@ const Booking = () => {
           </div>
         </div>
       </div>
-      <Chatbot/>
-    </div>
+
+    </div >
   )
 }
 

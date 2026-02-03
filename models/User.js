@@ -20,13 +20,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       minlength: 6,
     },
+    googleId: {
+      type: String,
+    },
     phone: {
       type: String,
-      default: "", // Google users may not have phone initially
+      default: "",
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin", "operator"],
       default: "user",
     },
     isVerified: {
@@ -43,10 +46,6 @@ const userSchema = new mongoose.Schema(
         ref: "Booking",
       },
     ],
-    googleId: { type: String },
-  name: { type: String },
-  email: { type: String },
-  role: { type: String, default: "Customer" }
   },
   {
     timestamps: true,

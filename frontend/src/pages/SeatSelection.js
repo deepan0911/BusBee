@@ -60,7 +60,7 @@ const SeatSelection = () => {
     sessionStorage.setItem("journeyDate", date)
     sessionStorage.setItem("route", JSON.stringify({ from, to }))
 
-    navigate(`/booking/${id}`)
+    navigate(`/boarding-dropping/${id}?from=${from}&to=${to}&date=${date}`)
   }
 
   if (loading) {
@@ -87,35 +87,35 @@ const SeatSelection = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center text-lg font-semibold">
-                  <MapPin className="h-5 w-5 mr-2 text-blue-600" />
-                  {from} → {to}
-                </div>
-                <div className="text-gray-600">
-                  {new Date(date).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </div>
-              </div>
-              <button onClick={() => navigate(-1)} className="text-blue-600 hover:text-blue-800">
-                ← Back
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Seat Layout */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+
+              {/* Integrated Header with Back Button */}
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+                <div className="flex items-center space-x-4">
+                  <button onClick={() => navigate(-1)} className="text-blue-600 hover:text-blue-800 mr-2 font-medium">
+                    ← Back
+                  </button>
+                  <div className="h-6 w-px bg-gray-300 mx-2"></div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center text-lg font-bold text-gray-800">
+                      <MapPin className="h-4 w-4 mr-2 text-blue-600" />
+                      {from} <span className="mx-2 text-gray-400">→</span> {to}
+                    </div>
+                    <div className="text-sm text-gray-500 ml-6">
+                      {new Date(date).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">{bus.operatorName}</h2>
@@ -123,13 +123,14 @@ const SeatSelection = () => {
                     {bus.busNumber} • {bus.busType}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-blue-600">₹{bus.price}</p>
-                  <p className="text-sm text-gray-500">per seat</p>
-                </div>
               </div>
 
-              <SeatLayout bus={bus} selectedSeats={selectedSeats} onSeatSelect={handleSeatSelect} />
+              <SeatLayout
+                bus={bus}
+                selectedSeats={selectedSeats}
+                onSeatSelect={handleSeatSelect}
+                onProceed={handleProceedToBooking}
+              />
             </div>
           </div>
 
@@ -169,31 +170,8 @@ const SeatSelection = () => {
                       </span>
                     ))}
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Seats ({selectedSeats.length})</span>
-                      <span className="font-medium">₹{selectedSeats.length * bus.price}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total Amount</span>
-                      <span className="text-blue-600">₹{selectedSeats.length * bus.price}</span>
-                    </div>
-                  </div>
                 </div>
               )}
-
-             <button
-                onClick={handleProceedToBooking}
-                disabled={selectedSeats.length === 0}
-                className={`w-full h-12 px-5 rounded-md text-lg font-semibold flex items-center justify-center transition duration-200
-                  ${selectedSeats.length === 0
-                    ? "bg-gray-400 text-white cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"}
-                `}
-              >
-                Proceed to Book
-              </button>
-
 
               <div className="mt-4 text-center">
                 <p className="text-xs text-gray-500">
@@ -203,9 +181,11 @@ const SeatSelection = () => {
               </div>
             </div>
           </div>
+
+
         </div>
       </div>
-      <Chatbot/>
+      <Chatbot />
     </div>
   )
 }

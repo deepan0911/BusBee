@@ -1,9 +1,28 @@
 const express = require("express")
 const Booking = require("../models/Booking")
 const Bus = require("../models/Bus")
-const { auth } = require("../middleware/auth")
+const { auth, operatorAuth } = require("../middleware/auth")
 const { sendBookingConfirmation, sendCancellationEmail } = require("../services/emailService")
 const router = express.Router()
+
+// Get operator bookings
+router.get("/operator/my-bookings", operatorAuth, async (req, res) => {
+  try {
+    // Find buses owned by this operator
+    const buses = await Bus.find({ operatorId: req.user._id }).select('_id');
+    const busIds = buses.map(bus => bus._id);
+
+    // Find bookings for these buses
+    const bookings = await Booking.find({ bus: { $in: busIds } })
+      .populate("user", "name email phone")
+      .populate("bus", "busNumber route schedule")
+      .sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 
 // Create booking
 router.post("/", auth, async (req, res) => {
@@ -11,7 +30,7 @@ router.post("/", auth, async (req, res) => {
     console.log("📦 Booking request received:", req.body)
     console.log("👤 User:", req.user.name, req.user.email)
 
-    const { busId, passengers, journeyDate, contactDetails } = req.body
+    const { busId, passengers, journeyDate, contactDetails, boardingPoint, droppingPoint } = req.body
 
     // Validate required fields
     if (!busId || !passengers || !journeyDate || !contactDetails) {
@@ -71,6 +90,8 @@ router.post("/", auth, async (req, res) => {
       journeyDate,
       totalAmount,
       contactDetails,
+      boardingPoint,
+      droppingPoint,
       status: "confirmed", // Directly confirm booking without payment
     })
 
@@ -114,11 +135,11 @@ router.post("/", auth, async (req, res) => {
     }
 
     console.log("🎉 Booking completed successfully")
-   res.status(201).json({
-  success: true,
-  message: "Booking confirmed successfully!",
-  booking,
-})
+    res.status(201).json({
+      success: true,
+      message: "Booking confirmed successfully!",
+      booking,
+    })
 
   } catch (error) {
     console.error("💥 Booking error:", error)
@@ -172,7 +193,7 @@ router.put("/:id/cancel", auth, async (req, res) => {
     }
 
     // Check if booking can be cancelled
-     const journeyDateOnly = new Date(booking.journeyDate)
+    const journeyDateOnly = new Date(booking.journeyDate)
     const [hours, minutes] = booking.bus.schedule.departureTime.split(":").map(Number)
 
     const journeyDateTime = new Date(
