@@ -4,10 +4,9 @@ import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import axios from "axios"
-import { MapPin, User, Phone, CreditCard } from "lucide-react"
+import { MapPin, User, Phone } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuth } from "../context/AuthContext"
-import Chatbot from "../components/ChatBot"
 
 
 const Booking = () => {

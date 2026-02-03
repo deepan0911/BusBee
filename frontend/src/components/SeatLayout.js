@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Disc, Armchair, Bed } from "lucide-react"
+import { Disc } from "lucide-react"
 
 const SeatLayout = ({ bus, selectedSeats, onSeatSelect, onProceed }) => {
   // CRITICAL: Use the exact layoutConfig saved by the operator - no defaults!

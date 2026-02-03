@@ -24,24 +24,24 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   About Us
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   Services
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   Contact
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   FAQ
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -51,24 +51,24 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   Help Center
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   Terms & Conditions
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   Privacy Policy
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <button className="hover:text-white">
                   Cancellation Policy
-                </a>
+                </button>
               </li>
             </ul>
           </div>

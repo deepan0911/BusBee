@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Shield, Disc } from "lucide-react"
@@ -20,11 +20,7 @@ const BusDetails = () => {
   const to = searchParams.get("to")
   const date = searchParams.get("date")
 
-  useEffect(() => {
-    fetchBusDetails()
-  }, [id])
-
-  const fetchBusDetails = async () => {
+  const fetchBusDetails = React.useCallback(async () => {
     try {
       const response = await axios.get(`/api/buses/${id}`)
       setBus(response.data)
@@ -33,7 +29,11 @@ const BusDetails = () => {
       toast.error("Failed to fetch bus details")
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    fetchBusDetails()
+  }, [fetchBusDetails])
 
   const handleSelectSeats = () => {
     if (!user) {

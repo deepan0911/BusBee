@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { Filter, MapPin, Clock, Users, Star, Wifi, Tv, Coffee, Calendar, Shield, Disc } from "lucide-react"
@@ -24,15 +24,7 @@ const BusSearch = () => {
   const to = searchParams.get("to")
   const date = searchParams.get("date")
 
-  useEffect(() => {
-    fetchBuses()
-  }, [from, to, date])
-
-  useEffect(() => {
-    applyFilters()
-  }, [buses, filters])
-
-  const fetchBuses = async () => {
+  const fetchBuses = React.useCallback(async () => {
     try {
       console.log("Searching buses with params:", { from, to, date })
       const response = await axios.get("/api/buses/search", {
@@ -46,9 +38,9 @@ const BusSearch = () => {
       toast.error("Failed to fetch buses")
       setLoading(false)
     }
-  }
+  }, [from, to, date])
 
-  const applyFilters = () => {
+  const applyFilters = React.useCallback(() => {
     let filtered = [...buses]
 
     if (filters.busType) {
@@ -71,7 +63,15 @@ const BusSearch = () => {
     }
 
     setFilteredBuses(filtered)
-  }
+  }, [buses, filters])
+
+  useEffect(() => {
+    fetchBuses()
+  }, [fetchBuses])
+
+  useEffect(() => {
+    applyFilters()
+  }, [applyFilters])
 
   const handleBookNow = (busId) => {
     navigate(`/bus/${busId}?from=${from}&to=${to}&date=${date}`)

@@ -21,16 +21,7 @@ const BoardingDropping = () => {
     const to = searchParams.get("to")
     const date = searchParams.get("date")
 
-    useEffect(() => {
-        fetchBusDetails()
-        // Restore selections if available in session
-        const storedBoarding = sessionStorage.getItem("selectedBoarding")
-        const storedDropping = sessionStorage.getItem("selectedDropping")
-        if (storedBoarding) setSelectedBoarding(JSON.parse(storedBoarding))
-        if (storedDropping) setSelectedDropping(JSON.parse(storedDropping))
-    }, [id])
-
-    const fetchBusDetails = async () => {
+    const fetchBusDetails = React.useCallback(async () => {
         try {
             const response = await axios.get(`/api/buses/${id}`)
             setBus(response.data)
@@ -39,7 +30,16 @@ const BoardingDropping = () => {
             toast.error("Failed to fetch bus details")
             setLoading(false)
         }
-    }
+    }, [id])
+
+    useEffect(() => {
+        fetchBusDetails()
+        // Restore selections if available in session
+        const storedBoarding = sessionStorage.getItem("selectedBoarding")
+        const storedDropping = sessionStorage.getItem("selectedDropping")
+        if (storedBoarding) setSelectedBoarding(JSON.parse(storedBoarding))
+        if (storedDropping) setSelectedDropping(JSON.parse(storedDropping))
+    }, [id, fetchBusDetails])
 
     const handleBoardingSelect = (point) => {
         setSelectedBoarding(point)
@@ -102,7 +102,7 @@ const BoardingDropping = () => {
                                     <span className="text-sm text-gray-600">{new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                                 </div>
                             </div>
-                            
+
                             {/* Progress Indicator */}
                             <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-2">
                                 <div className={`flex items-center gap-2 ${step === 'boarding' || selectedBoarding ? 'text-gray-900' : 'text-gray-400'}`}>
@@ -155,8 +155,8 @@ const BoardingDropping = () => {
                                                             {/* Radio Button */}
                                                             <div className={`
                                                                 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0
-                                                                ${isSelected 
-                                                                    ? 'border-gray-900 bg-gray-900' 
+                                                                ${isSelected
+                                                                    ? 'border-gray-900 bg-gray-900'
                                                                     : 'border-gray-300 group-hover:border-gray-400 bg-white'
                                                                 }
                                                             `}>

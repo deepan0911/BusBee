@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
 import axios from "axios"
-import { MapPin, Users, ArrowRight } from "lucide-react"
+import { MapPin, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import Chatbot from "../components/ChatBot"
 import SeatLayout from "../components/SeatLayout"
@@ -20,11 +20,7 @@ const SeatSelection = () => {
   const to = searchParams.get("to")
   const date = searchParams.get("date")
 
-  useEffect(() => {
-    fetchBusDetails()
-  }, [id])
-
-  const fetchBusDetails = async () => {
+  const fetchBusDetails = React.useCallback(async () => {
     try {
       const response = await axios.get(`/api/buses/${id}`)
       setBus(response.data)
@@ -33,7 +29,11 @@ const SeatSelection = () => {
       toast.error("Failed to fetch bus details")
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    fetchBusDetails()
+  }, [fetchBusDetails])
 
   const handleSeatSelect = (seatNumber) => {
     if (selectedSeats.includes(seatNumber)) {
