@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }) => {
   // ✅ Fetch current user with token
   const fetchUser = async () => {
     try {
-      const response = await axios.get("/api/auth/me");
+      const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+      const response = await axios.get(`${baseURL}/api/auth/me`);
       setUser(response.data.user);
       return response.data.user;
     } catch (error) {
@@ -65,7 +66,8 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ Manual login
   const login = async (email, password) => {
-    const response = await axios.post("/api/auth/login", { email, password });
+    const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+    const response = await axios.post(`${baseURL}/api/auth/login`, { email, password });
     const { token, user } = response.data;
 
     localStorage.setItem("token", token);
@@ -77,7 +79,8 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ Manual registration
   const register = async (userData) => {
-    const response = await axios.post("/api/auth/register", userData);
+    const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+    const response = await axios.post(`${baseURL}/api/auth/register`, userData);
     const { token, user } = response.data;
 
     localStorage.setItem("token", token);
