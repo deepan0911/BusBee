@@ -55,6 +55,7 @@ const BusSearch = () => {
     if (filters.departureTime) {
       const [start, end] = filters.departureTime.split("-")
       filtered = filtered.filter((bus) => {
+        if (!bus.schedule?.departureTime) return false
         const depTime = Number.parseInt(bus.schedule.departureTime.split(":")[0])
         const startTime = Number.parseInt(start)
         const endTime = Number.parseInt(end)
@@ -241,9 +242,9 @@ const BusSearch = () => {
                           <p className="text-gray-600">
                             {bus.busNumber} • {bus.busType}
                           </p>
-                          {bus.schedule.departureDate && (
+                          {bus.schedule?.departureDate && (
                             <p className="text-sm text-blue-600 font-medium">
-                              {formatDate(bus.schedule.departureDate)}
+                              {formatDate(bus.schedule?.departureDate)}
                             </p>
                           )}
                         </div>
@@ -260,23 +261,23 @@ const BusSearch = () => {
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
-                            <p className="font-medium">{bus.schedule.departureTime}</p>
+                            <p className="font-medium">{bus.schedule?.departureTime || "N/A"}</p>
                             <p className="text-sm text-gray-500">{from}</p>
                           </div>
                         </div>
 
                         <div className="flex items-center">
                           <div className="w-full border-t-2 border-dashed border-gray-300 mx-4"></div>
-                          <span className="text-sm text-gray-500 whitespace-nowrap">{bus.schedule.duration}</span>
+                          <span className="text-sm text-gray-500 whitespace-nowrap">{bus.schedule?.duration || "N/A"}</span>
                           <div className="w-full border-t-2 border-dashed border-gray-300 mx-4"></div>
                         </div>
 
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
-                            <p className="font-medium">{bus.schedule.arrivalTime}</p>
+                            <p className="font-medium">{bus.schedule?.arrivalTime || "N/A"}</p>
                             <p className="text-sm text-gray-500">{to}</p>
-                            {bus.schedule.arrivalDate &&
+                            {bus.schedule?.arrivalDate && bus.schedule?.departureDate &&
                               new Date(bus.schedule.arrivalDate).toDateString() !==
                               new Date(bus.schedule.departureDate).toDateString() && (
                                 <p className="text-xs text-orange-600">+1 day</p>

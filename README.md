@@ -1,5 +1,9 @@
 # Bus Reservation System - MERN Stack (Without Payment Integration)
 
+Deployed at vercel:
+
+https://bus-bee.vercel.app/
+
 A complete bus ticket reservation system built with MongoDB, Express.js, React.js, and Node.js. Features include user authentication, bus search, seat selection, booking management, email notifications, and admin panel.
 
 ## Features

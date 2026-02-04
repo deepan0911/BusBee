@@ -107,10 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ Trigger Google OAuth flow
   const loginWithGoogle = () => {
-    const baseURL =
-      process.env.NODE_ENV === "production"
-        ? "https://busbee.onrender.com"
-        : "http://localhost:5000";
+    const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
     window.open(`${baseURL}/api/auth/google`, "_self");
   };
