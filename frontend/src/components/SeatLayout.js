@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Disc } from "lucide-react"
+import { Disc, Armchair, BedDouble } from "lucide-react"
 
 const SeatLayout = ({ bus, selectedSeats, onSeatSelect, onProceed }) => {
   // CRITICAL: Use the exact layoutConfig saved by the operator - no defaults!
@@ -71,10 +71,14 @@ const SeatLayout = ({ bus, selectedSeats, onSeatSelect, onProceed }) => {
           >
             {seat && (
               <div className="flex flex-col items-center justify-center h-full gap-0.5">
-                <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-gray-700'}`}>
-                  {seat.seatNumber.replace('S', '')}
+                <span className={`${isSelected ? 'text-white' : 'text-gray-600'}`}>
+                  {seat.type === 'sleeper' ? (
+                    <BedDouble className="w-5 h-5" strokeWidth={1.5} />
+                  ) : (
+                    <Armchair className="w-5 h-5" strokeWidth={1.5} />
+                  )}
                 </span>
-                <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-blue-100' : 'text-gray-500'}`}>
+                <span className={`text-[9px] font-bold leading-none ${isSelected ? 'text-blue-100' : 'text-gray-500'}`}>
                   {seat.type === 'sleeper' ? (bus.priceSleeper || bus.price) : (bus.priceSeater || bus.price)}
                 </span>
               </div>
