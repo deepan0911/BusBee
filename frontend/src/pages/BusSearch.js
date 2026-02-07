@@ -31,7 +31,16 @@ const BusSearch = () => {
         params: { from, to, date },
       })
       console.log("Found buses:", response.data.length)
-      setBuses(response.data)
+      // Filter out buses with invalid data (missing schedule or price)
+      const validBuses = response.data.filter(bus =>
+        bus.schedule &&
+        bus.schedule.departureTime &&
+        bus.schedule.arrivalTime &&
+        bus.price
+      );
+
+      console.log(`Filtered ${response.data.length - validBuses.length} invalid buses. keeping ${validBuses.length} valid buses.`);
+      setBuses(validBuses)
       setLoading(false)
     } catch (error) {
       console.error("Bus search error:", error)
