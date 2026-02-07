@@ -33,8 +33,10 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: clientUrl,
   credentials: true,
 }));
 
