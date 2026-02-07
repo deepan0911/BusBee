@@ -33,7 +33,8 @@ const Booking = () => {
   const fetchBusDetails = useCallback(async () => {
     try {
       console.log("🚌 Fetching bus details for ID:", id)
-      const response = await axios.get(`/api/buses/${id}`)
+      const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+      const response = await axios.get(`${baseURL}/api/buses/${id}`)
       console.log("✅ Bus details fetched:", response.data.operatorName)
       setBus(response.data)
       setLoading(false)

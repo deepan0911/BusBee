@@ -22,7 +22,8 @@ const SeatSelection = () => {
 
   const fetchBusDetails = React.useCallback(async () => {
     try {
-      const response = await axios.get(`/api/buses/${id}`)
+      const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+      const response = await axios.get(`${baseURL}/api/buses/${id}`)
       setBus(response.data)
       setLoading(false)
     } catch (error) {
