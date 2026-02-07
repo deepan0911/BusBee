@@ -14,11 +14,15 @@ const GoogleSuccess = () => {
     const token = new URLSearchParams(window.location.search).get("token");
 
     if (token) {
-      loginWithToken(token).then((user) => {
-        if (!user) {
-          navigate("/login", { state: { error: "Login failed. Please check your connection." } });
+      loginWithToken(token).then((result) => {
+        if (!result || result.error) {
+          const errorMessage = result?.error?.response?.data?.message || result?.error?.message || "Login failed. Please check your connection to the server.";
+          console.error("Google Login Error:", result?.error);
+          navigate("/login", { state: { error: errorMessage } });
           return;
         }
+
+        const user = result; // If no error, result is user object
 
         if (user.role === "admin") {
           navigate("/admin/dashboard", { replace: true });

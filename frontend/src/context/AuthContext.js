@@ -105,8 +105,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       return await fetchUser(); // fetch user data after setting token
-    } catch {
+    } catch (error) {
       logout();
+      return { error };
     }
   };
 

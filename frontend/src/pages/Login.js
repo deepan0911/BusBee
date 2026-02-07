@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
@@ -16,7 +16,16 @@ const Login = () => {
 
   const { login, loginWithGoogle } = useAuth(); // ✅ include Google login from context
   const navigate = useNavigate();
+  const location = useLocation(); // Import useLocation
+  const toastShownRef = useRef(false);
 
+  useEffect(() => {
+    if (location.state?.error && !toastShownRef.current) {
+      toast.error(location.state.error);
+      toastShownRef.current = true;
+      window.history.replaceState({}, document.title); // clear state
+    }
+  }, [location.state]);
   const handleChange = (e) => {
     setFormData({
       ...formData,
