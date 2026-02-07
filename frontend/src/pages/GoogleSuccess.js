@@ -15,9 +15,14 @@ const GoogleSuccess = () => {
 
     if (token) {
       loginWithToken(token).then((user) => {
-        if (user && user.role === "admin") {
+        if (!user) {
+          navigate("/login", { state: { error: "Login failed. Please check your connection." } });
+          return;
+        }
+
+        if (user.role === "admin") {
           navigate("/admin/dashboard", { replace: true });
-        } else if (user && user.role === "operator") {
+        } else if (user.role === "operator") {
           navigate("/operator/dashboard", { replace: true });
         } else {
           navigate("/", { state: { googleLoginSuccess: true } });

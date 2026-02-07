@@ -51,10 +51,12 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+      console.log("AuthContext: Fetching user from", baseURL);
       const response = await axios.get(`${baseURL}/api/auth/me`);
       setUser(response.data.user);
       return response.data.user;
     } catch (error) {
+      console.error("Fetch user failed:", error);
       // Token might be expired or invalid
       localStorage.removeItem("token");
       delete axios.defaults.headers.common["Authorization"];
