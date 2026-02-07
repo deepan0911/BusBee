@@ -19,7 +19,8 @@ const MyBookings = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await axios.get("/api/bookings/my-bookings")
+      const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+      const response = await axios.get(`${baseURL}/api/bookings/my-bookings`)
       setBookings(response.data)
       setLoading(false)
     } catch (error) {
@@ -38,7 +39,8 @@ const MyBookings = () => {
     setConfirmModal({ show: false, id: null }) // Close modal immediately
 
     try {
-      await axios.put(`/api/bookings/${bookingId}/cancel`)
+      const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+      await axios.put(`${baseURL}/api/bookings/${bookingId}/cancel`)
       toast.success("Booking cancelled successfully")
       fetchBookings() // Refresh bookings
     } catch (error) {

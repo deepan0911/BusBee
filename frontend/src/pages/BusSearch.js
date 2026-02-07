@@ -26,8 +26,9 @@ const BusSearch = () => {
 
   const fetchBuses = React.useCallback(async () => {
     try {
+      const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
       console.log("Searching buses with params:", { from, to, date })
-      const response = await axios.get("/api/buses/search", {
+      const response = await axios.get(`${baseURL}/api/buses/search`, {
         params: { from, to, date },
       })
       console.log("Found buses:", response.data.length)

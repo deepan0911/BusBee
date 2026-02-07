@@ -43,7 +43,8 @@ const Payment = () => {
       }
 
       try {
-        const { data: order } = await axios.post("/api/payment/create-order", { amount });
+        const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+        const { data: order } = await axios.post(`${baseURL}/api/payment/create-order`, { amount });
 
         const options = {
           key: order.key_id,
@@ -54,7 +55,7 @@ const Payment = () => {
           order_id: order.id,
           handler: async function (response) {
             try {
-              const res = await axios.post("/api/payment/verify", {
+              const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"}/api/payment/verify`, {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
@@ -62,7 +63,7 @@ const Payment = () => {
 
               if (res.data.success) {
                 // ✅ Final Booking after Payment Verification
-                const bookingRes = await axios.post("/api/bookings", bookingData, {
+                const bookingRes = await axios.post(`${process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"}/api/bookings`, bookingData, {
                   headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
