@@ -33,11 +33,25 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://bus-bee.vercel.app",
+  "https://bus-bee-deepan0911.vercel.app"
+];
 
 app.use(cors({
-  origin: clientUrl,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-rtb-fingerprint-id"]
 }));
 
 app.use(express.json());
