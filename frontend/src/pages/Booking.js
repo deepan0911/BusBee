@@ -98,7 +98,17 @@ const Booking = () => {
       droppingPoint: selectedDropping
     };
 
-    const totalAmount = selectedSeats.length * bus.price;
+    // ✅ Calculate total amount based on seat type (seater vs sleeper)
+    const totalAmount = selectedSeats.reduce((total, seatNumber) => {
+      const seatObj = bus.seats.find(s => s.seatNumber === seatNumber);
+      const price = seatObj?.type === 'sleeper'
+        ? (bus.priceSleeper || bus.price)
+        : (bus.priceSeater || bus.price);
+      return total + price;
+    }, 0);
+
+    console.log("💰 Total amount calculated:", totalAmount);
+    console.log("🪑 Selected seats:", selectedSeats);
 
     // ✅ Redirect to /payment with necessary data
     navigate("/payment", {
@@ -134,7 +144,14 @@ const Booking = () => {
     )
   }
 
-  const totalAmount = selectedSeats.length * bus.price
+  // Calculate total amount based on seat type (seater vs sleeper)
+  const totalAmount = selectedSeats.reduce((total, seatNumber) => {
+    const seatObj = bus.seats?.find(s => s.seatNumber === seatNumber);
+    const price = seatObj?.type === 'sleeper'
+      ? (bus.priceSleeper || bus.price)
+      : (bus.priceSeater || bus.price);
+    return total + price;
+  }, 0)
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

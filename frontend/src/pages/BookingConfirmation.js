@@ -18,10 +18,14 @@ const BookingConfirmation = () => {
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
-        const response = await axios.get(`/api/bookings/${bookingId}`)
+        const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+        console.log("📦 Fetching booking details for ID:", bookingId);
+        const response = await axios.get(`${baseURL}/api/bookings/${bookingId}`)
+        console.log("✅ Booking details fetched successfully");
         setBooking(response.data)
         setLoading(false)
       } catch (error) {
+        console.error("❌ Failed to fetch booking details:", error);
         toast.error("Failed to fetch booking details")
         setLoading(false)
       }
