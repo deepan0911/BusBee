@@ -46,6 +46,29 @@ router.get("/search", async (req, res) => {
   }
 })
 
+// Get all unique routes
+router.get("/routes/available", async (req, res) => {
+  try {
+    const buses = await Bus.find({ isActive: true }).select("route")
+
+    // Extract unique routes
+    const routesSet = new Set()
+    buses.forEach(bus => {
+      if (bus.route && bus.route.from && bus.route.to) {
+        routesSet.add(JSON.stringify({ from: bus.route.from, to: bus.route.to }))
+      }
+    })
+
+    // Convert back to array of objects
+    const uniqueRoutes = Array.from(routesSet).map(route => JSON.parse(route))
+
+    res.json(uniqueRoutes)
+  } catch (error) {
+    console.error("Get routes error:", error)
+    res.status(500).json({ message: "Server error", error: error.message })
+  }
+})
+
 // Get buses for the logged-in operator
 router.get("/operator/my-buses", operatorAuth, async (req, res) => {
   try {

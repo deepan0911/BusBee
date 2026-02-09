@@ -199,30 +199,6 @@ const BusDetails = () => {
                 </div>
               </div>
             </div>
-
-            {/* Reviews */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Reviews & Ratings</h3>
-              {bus.reviews && bus.reviews.length > 0 ? (
-                <div className="space-y-4">
-                  {bus.reviews.slice(0, 3).map((review, index) => (
-                    <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{review.user?.name || "Anonymous"}</span>
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                          <span className="text-sm">{review.rating}</span>
-                        </div>
-                      </div>
-                      <p className="text-gray-600 text-sm">{review.comment}</p>
-                      <p className="text-xs text-gray-500 mt-1">{new Date(review.date).toLocaleDateString()}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No reviews yet</p>
-              )}
-            </div>
           </div>
 
           {/* Booking Summary */}

@@ -27,24 +27,41 @@ transporter.verify((error, success) => {
 
 // Helper function to find Chrome executable
 const findChromeExecutable = () => {
-  const cacheDir = '/opt/render/.cache/puppeteer/chrome';
-  
+  const os = require('os');
+  const isWindows = os.platform() === 'win32';
+
+  // Different cache paths for different platforms
+  const cachePaths = isWindows
+    ? [
+      path.join(os.homedir(), '.cache', 'puppeteer', 'chrome'),
+      path.join(process.env.USERPROFILE || '', '.cache', 'puppeteer', 'chrome')
+    ]
+    : ['/opt/render/.cache/puppeteer/chrome'];
+
   try {
-    if (fs.existsSync(cacheDir)) {
-      const versions = fs.readdirSync(cacheDir);
-      if (versions.length > 0) {
-        // Sort versions to get the latest one
-        const latestVersion = versions.sort().reverse()[0];
-        // Try both possible paths
-        const chromePaths = [
-          path.join(cacheDir, latestVersion, 'chrome-linux64', 'chrome'),
-          path.join(cacheDir, latestVersion, 'chrome')
-        ];
-        
-        for (const chromePath of chromePaths) {
-          if (fs.existsSync(chromePath)) {
-            console.log(`✅ Found Chrome at: ${chromePath}`);
-            return chromePath;
+    for (const cacheDir of cachePaths) {
+      if (fs.existsSync(cacheDir)) {
+        const versions = fs.readdirSync(cacheDir);
+        if (versions.length > 0) {
+          // Sort versions to get the latest one
+          const latestVersion = versions.sort().reverse()[0];
+
+          // Different executable paths for Windows vs Linux
+          const chromePaths = isWindows
+            ? [
+              path.join(cacheDir, latestVersion, 'chrome-win64', 'chrome.exe'),
+              path.join(cacheDir, latestVersion, 'chrome.exe')
+            ]
+            : [
+              path.join(cacheDir, latestVersion, 'chrome-linux64', 'chrome'),
+              path.join(cacheDir, latestVersion, 'chrome')
+            ];
+
+          for (const chromePath of chromePaths) {
+            if (fs.existsSync(chromePath)) {
+              console.log(`✅ Found Chrome at: ${chromePath}`);
+              return chromePath;
+            }
           }
         }
       }
@@ -52,7 +69,31 @@ const findChromeExecutable = () => {
   } catch (error) {
     console.log('Chrome path detection failed:', error.message);
   }
-  
+
+  // Fallback: Try to find system-installed Chrome
+  try {
+    const systemChromePaths = isWindows
+      ? [
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+        path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe')
+      ]
+      : [
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium'
+      ];
+
+    for (const chromePath of systemChromePaths) {
+      if (fs.existsSync(chromePath)) {
+        console.log(`✅ Found system Chrome at: ${chromePath}`);
+        return chromePath;
+      }
+    }
+  } catch (error) {
+    console.log('System Chrome detection failed:', error.message);
+  }
+
   return null; // Let Puppeteer auto-detect
 };
 
@@ -60,7 +101,7 @@ const generateBookingPDF = async (bookingDetails, filePath) => {
   let browser;
   try {
     const chromeExecutable = findChromeExecutable();
-    
+
     const launchOptions = {
       headless: 'new',
       args: [
@@ -198,15 +239,15 @@ const generateBookingPDF = async (bookingDetails, filePath) => {
     `;
 
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    await page.pdf({ 
-      path: filePath, 
-      format: 'A4', 
+    await page.pdf({
+      path: filePath,
+      format: 'A4',
       printBackground: true,
       timeout: 30000 // 30 second timeout
     });
-    
+
     console.log(`✅ PDF generated successfully: ${filePath}`);
-    
+
   } catch (error) {
     console.error('❌ PDF generation failed:', error.message);
     throw error;
@@ -219,10 +260,10 @@ const generateBookingPDF = async (bookingDetails, filePath) => {
 
 const sendBookingConfirmation = async (userEmail, bookingDetails) => {
   const pdfFilePath = path.join(__dirname, `Booking_${bookingDetails.bookingId}.pdf`);
-  
+
   try {
     await generateBookingPDF(bookingDetails, pdfFilePath);
-    
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: userEmail,
@@ -274,10 +315,10 @@ const sendBookingConfirmation = async (userEmail, bookingDetails) => {
 
     await transporter.sendMail(mailOptions);
     console.log("✅ Booking confirmation email sent with PDF to:", userEmail);
-    
+
   } catch (error) {
     console.error("❌ Error sending email with PDF:", error.message);
-    
+
     // Fallback: Send email without PDF attachment
     try {
       const fallbackMailOptions = {
@@ -323,10 +364,10 @@ const sendBookingConfirmation = async (userEmail, bookingDetails) => {
           </div>
         `,
       };
-      
+
       await transporter.sendMail(fallbackMailOptions);
       console.log("✅ Fallback email sent successfully (without PDF) to:", userEmail);
-      
+
     } catch (fallbackError) {
       console.error("❌ Fallback email also failed:", fallbackError.message);
       throw fallbackError;

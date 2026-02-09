@@ -6,7 +6,8 @@ import { Search, MapPin, Calendar, Shield, Clock, Star } from "lucide-react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import Chatbot from "../components/ChatBot"
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"
+import axios from "axios"
 
 const Home = () => {
 
@@ -21,6 +22,8 @@ const Home = () => {
   const [fromActiveIndex, setFromActiveIndex] = useState(-1)
   const [toActiveIndex, setToActiveIndex] = useState(-1)
   const [openFAQ, setOpenFAQ] = useState(null)
+  const [routes, setRoutes] = useState([])
+  const [loadingRoutes, setLoadingRoutes] = useState(true)
 
   const navigate = useNavigate()
   const location = useLocation();
@@ -33,17 +36,25 @@ const Home = () => {
       window.history.replaceState({}, document.title); // clear state
     }
   }, [location.state]);
-  
-  const routes = [
-    { from: "Mumbai", to: "Pune" },
-    { from: "Delhi", to: "Jaipur" },
-    { from: "Bangalore", to: "Chennai" },
-    { from: "Mumbai", to: "Goa" },
-    { from: "Delhi", to: "Agra" },
-    { from: "Hyderabad", to: "Bangalore" },
-    { from:"Coimbatore" ,to:"Chennai"},
-    { from:"Coimbatore" ,to:"Bangalore"},
-  ]
+
+  // Fetch available routes from backend
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"
+        const response = await axios.get(`${baseURL}/api/buses/routes/available`)
+        setRoutes(response.data)
+        setLoadingRoutes(false)
+      } catch (error) {
+        console.error("Error fetching routes:", error)
+        // Fallback to empty array if fetch fails
+        setRoutes([])
+        setLoadingRoutes(false)
+      }
+    }
+
+    fetchRoutes()
+  }, [])
 
   const faqList = [
     {
@@ -96,7 +107,8 @@ const Home = () => {
   const filteredToCities = allCities.filter(
     (city) =>
       city.toLowerCase().includes(searchData.to.toLowerCase()) &&
-      city !== searchData.to
+      city !== searchData.to &&
+      city !== searchData.from  // Exclude the "From" city
   )
 
   const handleKeyDown = (e, field) => {
@@ -182,9 +194,8 @@ const Home = () => {
                       {filteredFromCities.map((city, idx) => (
                         <li
                           key={idx}
-                          className={`px-4 py-1 cursor-pointer ${
-                            fromActiveIndex === idx ? "bg-blue-100" : "hover:bg-blue-50"
-                          }`}
+                          className={`px-4 py-1 cursor-pointer ${fromActiveIndex === idx ? "bg-blue-100" : "hover:bg-blue-50"
+                            }`}
                           onMouseDown={() => {
                             setSearchData({ ...searchData, from: city })
                             setFromFocused(false)
@@ -222,9 +233,8 @@ const Home = () => {
                       {filteredToCities.map((city, idx) => (
                         <li
                           key={idx}
-                          className={`px-4 py-1 cursor-pointer ${
-                            toActiveIndex === idx ? "bg-blue-100" : "hover:bg-blue-50"
-                          }`}
+                          className={`px-4 py-1 cursor-pointer ${toActiveIndex === idx ? "bg-blue-100" : "hover:bg-blue-50"
+                            }`}
                           onMouseDown={() => {
                             setSearchData({ ...searchData, to: city })
                             setToFocused(false)
@@ -335,7 +345,7 @@ const Home = () => {
       </section>
       <Chatbot />
     </div>
-    
+
   )
 
 }
