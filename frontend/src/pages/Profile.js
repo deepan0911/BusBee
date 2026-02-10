@@ -57,7 +57,7 @@ const Profile = () => {
           loading: false
         })
       } catch (error) {
-        console.error("Error fetching statistics:", error)
+        // console.error("Error fetching statistics:", error)
         setStatistics(prev => ({ ...prev, loading: false }))
       }
     }

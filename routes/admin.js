@@ -126,7 +126,7 @@ router.post("/operators", adminAuth, async (req, res) => {
       password, // Will be hashed by pre-save hook
       phone,
       role: 'operator',
-      isVerified: true, // Auto-verify admin created operators
+      isVerified: false, // Start as pending until they add a bus
       // You might want to add companyName to User model or a separate Profile model if needed. 
       // For now, let's assume 'name' is the company name or contact person, 
       // but User model doesn't have 'companyName'. Let's add it to 'name' or separate field if Schema allows.
@@ -144,6 +144,24 @@ router.post("/operators", adminAuth, async (req, res) => {
     await user.save();
 
     res.status(201).json({ message: "Operator created successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Delete User/Operator
+router.delete("/users/:id", adminAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Handle operator specific cleanup if needed
+    if (user.role === 'operator') {
+      await Bus.deleteMany({ operatorId: user._id });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Operator and associated buses deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

@@ -19,13 +19,13 @@ const BookingConfirmation = () => {
     const fetchBookingDetails = async () => {
       try {
         const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-        console.log("📦 Fetching booking details for ID:", bookingId);
+        // console.log("📦 Fetching booking details for ID:", bookingId);
         const response = await axios.get(`${baseURL}/api/bookings/${bookingId}`)
-        console.log("✅ Booking details fetched successfully");
+        // console.log("✅ Booking details fetched successfully");
         setBooking(response.data)
         setLoading(false)
       } catch (error) {
-        console.error("❌ Failed to fetch booking details:", error);
+        // console.error("❌ Failed to fetch booking details:", error);
         toast.error("Failed to fetch booking details")
         setLoading(false)
       }
@@ -33,6 +33,10 @@ const BookingConfirmation = () => {
 
     fetchBookingDetails()
     window.scrollTo(0, 0)
+
+    // Fix for Razorpay modal locking scroll
+    document.body.style.overflow = "auto"
+    document.documentElement.style.overflow = "auto"
   }, [bookingId])
 
 
@@ -83,7 +87,7 @@ const BookingConfirmation = () => {
 
       toast.success("Ticket downloaded!");
     } catch (error) {
-      console.error("Failed to download ticket", error);
+      // console.error("Failed to download ticket", error);
       toast.error("Failed to download ticket");
     }
   };

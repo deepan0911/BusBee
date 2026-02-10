@@ -7,7 +7,7 @@ require("dotenv").config()
 const seedData = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI)
-    console.log("Connected to MongoDB")
+    // console.log("Connected to MongoDB")
 
     // Clear existing data
     await User.deleteMany({})
@@ -171,13 +171,13 @@ const seedData = async () => {
       await bus.save()
     }
 
-    console.log("Sample data seeded successfully!")
-    console.log("Admin login: admin@example.com / password123")
-    console.log("User login: user@example.com / password123")
+    // console.log("Sample data seeded successfully!")
+    // console.log("Admin login: admin@example.com / password123")
+    // console.log("User login: user@example.com / password123")
 
     process.exit(0)
   } catch (error) {
-    console.error("Error seeding data:", error)
+    // console.error("Error seeding data:", error)
     process.exit(1)
   }
 }

@@ -17,7 +17,7 @@ const GoogleSuccess = () => {
       loginWithToken(token).then((result) => {
         if (!result || result.error) {
           const errorMessage = result?.error?.response?.data?.message || result?.error?.message || "Login failed. Please check your connection to the server.";
-          console.error("Google Login Error:", result?.error);
+          // console.error("Google Login Error:", result?.error);
           navigate("/login", { state: { error: errorMessage } });
           return;
         }

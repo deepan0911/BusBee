@@ -25,10 +25,10 @@ const Payment = () => {
 
   useEffect(() => {
     const initiatePayment = async () => {
-      console.log("💳 Payment initiated with:");
-      console.log("📦 bookingData:", bookingData);
-      console.log("💰 amount:", amount);
-      console.log("🔑 token:", token);
+      // console.log("💳 Payment initiated with:");
+      // console.log("📦 bookingData:", bookingData);
+      // console.log("💰 amount:", amount);
+      // console.log("🔑 token:", token);
 
       if (!amount || !bookingData || !token) {
         toast.error("Invalid payment session. Please try again.");
@@ -70,7 +70,7 @@ const Payment = () => {
                   },
                 });
 
-                console.log("📦 Booking Response:", bookingRes.data);
+                // console.log("📦 Booking Response:", bookingRes.data);
                 if (bookingRes.data && bookingRes.data.booking && bookingRes.data.booking._id) {
                   toast.success("Booking confirmed!");
                   navigate(`/booking-confirmation/${bookingRes.data.booking._id}`);
@@ -83,7 +83,7 @@ const Payment = () => {
                 navigate("/");
               }
             } catch (err) {
-              console.error("❌ Payment or booking error:", err);
+              // console.error("❌ Payment or booking error:", err);
               toast.error("Payment verification failed");
               navigate("/");
             }
@@ -100,7 +100,7 @@ const Payment = () => {
         const rzp = new window.Razorpay(options);
         rzp.open();
       } catch (error) {
-        console.error("❌ Razorpay order error:", error);
+        // console.error("❌ Razorpay order error:", error);
         toast.error("Payment could not be initiated");
         navigate("/");
       }

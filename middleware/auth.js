@@ -6,7 +6,7 @@ const auth = async (req, res, next) => {
     const token = req.header("Authorization")?.replace("Bearer ", "")
 
     if (!token) {
-      console.log("No token provided")
+      // console.log("No token provided")
       return res.status(401).json({ message: "No token, authorization denied" })
     }
 
@@ -14,7 +14,7 @@ const auth = async (req, res, next) => {
     const user = await User.findById(decoded.userId).select("-password")
 
     if (!user) {
-      console.log("User not found for token")
+      // console.log("User not found for token")
       return res.status(401).json({ message: "Token is not valid" })
     }
 
@@ -22,9 +22,9 @@ const auth = async (req, res, next) => {
     next()
   } catch (error) {
     if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
-      console.warn(`Auth failed: ${error.message}`)
+      // console.warn(`Auth failed: ${error.message}`)
     } else {
-      console.error("Auth middleware error:", error)
+      // console.error("Auth middleware error:", error)
     }
     res.status(401).json({ message: "Token is not valid" })
   }
@@ -33,16 +33,16 @@ const auth = async (req, res, next) => {
 const adminAuth = async (req, res, next) => {
   try {
     await auth(req, res, () => {
-      console.log("User role:", req.user?.role)
+      // console.log("User role:", req.user?.role)
       if (req.user.role !== "admin") {
-        console.log("Access denied - not admin")
+        // console.log("Access denied - not admin")
         return res.status(403).json({ message: "Access denied. Admin only." })
       }
-      console.log("Admin access granted")
+      // console.log("Admin access granted")
       next()
     })
   } catch (error) {
-    console.error("Admin auth error:", error)
+    // console.error("Admin auth error:", error)
     res.status(401).json({ message: "Authorization failed" })
   }
 }

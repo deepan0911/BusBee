@@ -17,13 +17,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("❌ Email service error:", error.message);
-  } else {
-    console.log("✅ Email service is ready");
-  }
-});
+transporter.verify((error, success) => { });
 
 // Helper function to find Chrome executable
 const findChromeExecutable = () => {
@@ -59,7 +53,6 @@ const findChromeExecutable = () => {
 
           for (const chromePath of chromePaths) {
             if (fs.existsSync(chromePath)) {
-              console.log(`✅ Found Chrome at: ${chromePath}`);
               return chromePath;
             }
           }
@@ -67,7 +60,6 @@ const findChromeExecutable = () => {
       }
     }
   } catch (error) {
-    console.log('Chrome path detection failed:', error.message);
   }
 
   // Fallback: Try to find system-installed Chrome
@@ -86,12 +78,10 @@ const findChromeExecutable = () => {
 
     for (const chromePath of systemChromePaths) {
       if (fs.existsSync(chromePath)) {
-        console.log(`✅ Found system Chrome at: ${chromePath}`);
         return chromePath;
       }
     }
   } catch (error) {
-    console.log('System Chrome detection failed:', error.message);
   }
 
   return null; // Let Puppeteer auto-detect
@@ -246,10 +236,7 @@ const generateBookingPDF = async (bookingDetails, filePath) => {
       timeout: 30000 // 30 second timeout
     });
 
-    console.log(`✅ PDF generated successfully: ${filePath}`);
-
   } catch (error) {
-    console.error('❌ PDF generation failed:', error.message);
     throw error;
   } finally {
     if (browser) {
@@ -314,11 +301,8 @@ const sendBookingConfirmation = async (userEmail, bookingDetails) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("✅ Booking confirmation email sent with PDF to:", userEmail);
 
   } catch (error) {
-    console.error("❌ Error sending email with PDF:", error.message);
-
     // Fallback: Send email without PDF attachment
     try {
       const fallbackMailOptions = {
@@ -366,18 +350,14 @@ const sendBookingConfirmation = async (userEmail, bookingDetails) => {
       };
 
       await transporter.sendMail(fallbackMailOptions);
-      console.log("✅ Fallback email sent successfully (without PDF) to:", userEmail);
 
     } catch (fallbackError) {
-      console.error("❌ Fallback email also failed:", fallbackError.message);
       throw fallbackError;
     }
   } finally {
     // Clean up PDF file if it exists
     if (fs.existsSync(pdfFilePath)) {
-      fs.unlink(pdfFilePath, (err) => {
-        if (err) console.warn("⚠️ Failed to delete temp PDF:", err.message);
-      });
+      fs.unlink(pdfFilePath, (err) => { });
     }
   }
 };
@@ -411,9 +391,7 @@ const sendCancellationEmail = async (userEmail, bookingDetails) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("✅ Cancellation email sent successfully to:", userEmail);
   } catch (error) {
-    console.error("❌ Error sending cancellation email:", error.message);
     throw error;
   }
 };

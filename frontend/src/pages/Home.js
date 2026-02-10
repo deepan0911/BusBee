@@ -23,7 +23,7 @@ const Home = () => {
   const [toActiveIndex, setToActiveIndex] = useState(-1)
   const [openFAQ, setOpenFAQ] = useState(null)
   const [routes, setRoutes] = useState([])
-  const [loadingRoutes, setLoadingRoutes] = useState(true)
+
 
   const navigate = useNavigate()
   const location = useLocation();
@@ -44,12 +44,12 @@ const Home = () => {
         const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"
         const response = await axios.get(`${baseURL}/api/buses/routes/available`)
         setRoutes(response.data)
-        setLoadingRoutes(false)
+
       } catch (error) {
-        console.error("Error fetching routes:", error)
+        // console.error("Error fetching routes:", error)
         // Fallback to empty array if fetch fails
         setRoutes([])
-        setLoadingRoutes(false)
+
       }
     }
 

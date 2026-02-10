@@ -27,11 +27,11 @@ const BusSearch = () => {
   const fetchBuses = React.useCallback(async () => {
     try {
       const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-      console.log("Searching buses with params:", { from, to, date })
+      // console.log("Searching buses with params:", { from, to, date })
       const response = await axios.get(`${baseURL}/api/buses/search`, {
         params: { from, to, date },
       })
-      console.log("Found buses:", response.data.length)
+      // console.log("Found buses:", response.data.length)
       // Filter out buses with invalid data (missing schedule or price)
       const validBuses = response.data.filter(bus =>
         bus.schedule &&
@@ -40,11 +40,11 @@ const BusSearch = () => {
         bus.price
       );
 
-      console.log(`Filtered ${response.data.length - validBuses.length} invalid buses. keeping ${validBuses.length} valid buses.`);
+      // console.log(`Filtered ${response.data.length - validBuses.length} invalid buses. keeping ${validBuses.length} valid buses.`);
       setBuses(validBuses)
       setLoading(false)
     } catch (error) {
-      console.error("Bus search error:", error)
+      // console.error("Bus search error:", error)
       toast.error("Failed to fetch buses")
       setLoading(false)
     }

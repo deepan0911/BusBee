@@ -1,12 +1,13 @@
 const express = require("express")
 const Bus = require("../models/Bus")
+const User = require("../models/User")
 const { auth, adminAuth, operatorAuth } = require("../middleware/auth")
 const router = express.Router()
 
 // Search buses
 router.get("/search", async (req, res) => {
   try {
-    console.log("Bus search query:", req.query)
+    // console.log("Bus search query:", req.query)
     const { from, to, date, busType } = req.query
 
     const query = {}
@@ -34,14 +35,14 @@ router.get("/search", async (req, res) => {
 
     query.isActive = true
 
-    console.log("Final search query:", JSON.stringify(query, null, 2))
+    // console.log("Final search query:", JSON.stringify(query, null, 2))
 
     const buses = await Bus.find(query).populate("reviews.user", "name").sort({ "schedule.departureTime": 1 })
 
-    console.log(`Found ${buses.length} buses`)
+    // console.log(`Found ${buses.length} buses`)
     res.json(buses)
   } catch (error) {
-    console.error("Bus search error:", error)
+    // console.error("Bus search error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })
@@ -64,7 +65,7 @@ router.get("/routes/available", async (req, res) => {
 
     res.json(uniqueRoutes)
   } catch (error) {
-    console.error("Get routes error:", error)
+    // console.error("Get routes error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })
@@ -85,7 +86,7 @@ router.get("/operator/my-buses", operatorAuth, async (req, res) => {
     const buses = await Bus.find({ operatorId }).sort({ createdAt: -1 });
     res.json(buses);
   } catch (error) {
-    console.error("Get operator buses error:", error);
+    // console.error("Get operator buses error:", error);
     res.status(500).json({ message: "Server error" });
   }
 })
@@ -101,7 +102,7 @@ router.get("/:id", async (req, res) => {
 
     res.json(bus)
   } catch (error) {
-    console.error("Get bus error:", error)
+    // console.error("Get bus error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })
@@ -109,7 +110,7 @@ router.get("/:id", async (req, res) => {
 // Create bus (Operator or Admin)
 router.post("/", operatorAuth, async (req, res) => {
   try {
-    console.log("Creating bus with data:", req.body)
+    // console.log("Creating bus with data:", req.body)
 
     const { busNumber, operatorName, busType, totalSeats, route, schedule, price } = req.body
 
@@ -191,10 +192,19 @@ router.post("/", operatorAuth, async (req, res) => {
     const bus = new Bus(busData)
     await bus.save()
 
-    console.log("Bus created successfully:", bus._id)
+    // Auto-verify operator if they are pending (first bus added)
+    if (operatorId) {
+      const operatorUser = await User.findById(operatorId);
+      if (operatorUser && !operatorUser.isVerified) {
+        operatorUser.isVerified = true;
+        await operatorUser.save();
+      }
+    }
+
+    // console.log("Bus created successfully:", bus._id)
     res.status(201).json(bus)
   } catch (error) {
-    console.error("Create bus error:", error)
+    // console.error("Create bus error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })
@@ -202,7 +212,7 @@ router.post("/", operatorAuth, async (req, res) => {
 // Update bus (Operator or Admin)
 router.put("/:id", operatorAuth, async (req, res) => {
   try {
-    console.log("Updating bus:", req.params.id, "with data:", req.body)
+    // console.log("Updating bus:", req.params.id, "with data:", req.body)
 
     let bus = await Bus.findById(req.params.id)
 
@@ -217,10 +227,10 @@ router.put("/:id", operatorAuth, async (req, res) => {
 
     bus = await Bus.findByIdAndUpdate(req.params.id, req.body, { new: true })
 
-    console.log("Bus updated successfully:", bus._id)
+    // console.log("Bus updated successfully:", bus._id)
     res.json(bus)
   } catch (error) {
-    console.error("Update bus error:", error)
+    // console.error("Update bus error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })
@@ -228,7 +238,7 @@ router.put("/:id", operatorAuth, async (req, res) => {
 // Delete bus (Operator or Admin)
 router.delete("/:id", operatorAuth, async (req, res) => {
   try {
-    console.log("Deleting bus:", req.params.id)
+    // console.log("Deleting bus:", req.params.id)
 
     const bus = await Bus.findById(req.params.id)
 
@@ -243,10 +253,10 @@ router.delete("/:id", operatorAuth, async (req, res) => {
 
     await Bus.findByIdAndDelete(req.params.id)
 
-    console.log("Bus deleted successfully:", req.params.id)
+    // console.log("Bus deleted successfully:", req.params.id)
     res.json({ message: "Bus deleted successfully" })
   } catch (error) {
-    console.error("Delete bus error:", error)
+    // console.error("Delete bus error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })
@@ -254,12 +264,12 @@ router.delete("/:id", operatorAuth, async (req, res) => {
 // Get all buses (Admin only)
 router.get("/admin/all", adminAuth, async (req, res) => {
   try {
-    console.log("Fetching all buses for admin")
+    // console.log("Fetching all buses for admin")
     const buses = await Bus.find().sort({ createdAt: -1 })
-    console.log(`Found ${buses.length} buses`)
+    // console.log(`Found ${buses.length} buses`)
     res.json(buses)
   } catch (error) {
-    console.error("Get all buses error:", error)
+    // console.error("Get all buses error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })

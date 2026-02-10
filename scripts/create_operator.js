@@ -8,7 +8,7 @@ const createOperator = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
-        console.log("Connected to MongoDB");
+        // console.log("Connected to MongoDB");
 
         const email = "operator@busbee.com";
         const password = "operator123";
@@ -18,10 +18,10 @@ const createOperator = async () => {
         let operator = await User.findOne({ email });
 
         if (operator) {
-            console.log("Operator already exists. Updating role to 'operator' just in case.");
+            // console.log("Operator already exists. Updating role to 'operator' just in case.");
             operator.role = "operator";
             await operator.save();
-            console.log("Operator updated.");
+            // console.log("Operator updated.");
         } else {
             operator = new User({
                 name,
@@ -31,14 +31,14 @@ const createOperator = async () => {
                 phone: "1234567890"
             });
             await operator.save();
-            console.log("Operator created.");
+            // console.log("Operator created.");
         }
 
-        console.log("Email:", email);
-        console.log("Password:", password);
+        // console.log("Email:", email);
+        // console.log("Password:", password);
         process.exit(0);
     } catch (error) {
-        console.error("Error creating operator:", error);
+        // console.error("Error creating operator:", error);
         process.exit(1);
     }
 };

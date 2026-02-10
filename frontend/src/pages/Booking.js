@@ -32,21 +32,21 @@ const Booking = () => {
 
   const fetchBusDetails = useCallback(async () => {
     try {
-      console.log("🚌 Fetching bus details for ID:", id)
+      // console.log("🚌 Fetching bus details for ID:", id)
       const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
       const response = await axios.get(`${baseURL}/api/buses/${id}`)
-      console.log("✅ Bus details fetched:", response.data.operatorName)
+      // console.log("✅ Bus details fetched:", response.data.operatorName)
       setBus(response.data)
       setLoading(false)
     } catch (error) {
-      console.error("❌ Failed to fetch bus details:", error)
+      // console.error("❌ Failed to fetch bus details:", error)
       toast.error("Failed to fetch bus details")
       setLoading(false)
     }
   }, [id])
 
   useEffect(() => {
-    console.log("🔄 Component mounted, checking session storage...")
+    // console.log("🔄 Component mounted, checking session storage...")
 
     const seats = JSON.parse(sessionStorage.getItem("selectedSeats") || "[]")
     const routeData = JSON.parse(sessionStorage.getItem("route") || "{}")
@@ -54,10 +54,10 @@ const Booking = () => {
     const storedBoarding = sessionStorage.getItem("selectedBoarding")
     const storedDropping = sessionStorage.getItem("selectedDropping")
 
-    console.log("📦 Session data:", { seats, routeData, date })
+    // console.log("📦 Session data:", { seats, routeData, date })
 
     if (seats.length === 0) {
-      console.log("❌ No seats selected, redirecting to search")
+      // console.log("❌ No seats selected, redirecting to search")
       toast.error("No seats selected")
       navigate("/search")
       return
@@ -70,7 +70,7 @@ const Booking = () => {
     if (storedDropping) setSelectedDropping(JSON.parse(storedDropping))
 
     if (user) {
-      console.log("👤 Pre-filling user data:", user.email)
+      // console.log("👤 Pre-filling user data:", user.email)
       setValue("contactEmail", user.email)
       setValue("contactPhone", user.phone)
     }
@@ -107,8 +107,8 @@ const Booking = () => {
       return total + price;
     }, 0);
 
-    console.log("💰 Total amount calculated:", totalAmount);
-    console.log("🪑 Selected seats:", selectedSeats);
+    // console.log("💰 Total amount calculated:", totalAmount);
+    // console.log("🪑 Selected seats:", selectedSeats);
 
     // ✅ Redirect to /payment with necessary data
     navigate("/payment", {

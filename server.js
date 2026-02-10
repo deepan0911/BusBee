@@ -66,35 +66,31 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 30000, // Increased to 30 seconds
+      socketTimeoutMS: 60000, // Increased to 60 seconds
     });
 
-    console.log("✅ Connected to MongoDB Atlas");
-    console.log(`📍 Database Host: ${conn.connection.host}`);
+    // Connection successful
+
 
     // Connection event listeners
     mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
+      // Silent error
+
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️  MongoDB disconnected. Attempting to reconnect...');
+      // Silent disconnect
+
     });
 
     mongoose.connection.on('reconnected', () => {
-      console.log('✅ MongoDB reconnected');
+      // Silent reconnect
+
     });
 
   } catch (err) {
-    console.error("❌ MongoDB connection error:", err);
-    console.error("📋 Connection Details:");
-    console.error("   - Check if your IP is whitelisted in MongoDB Atlas");
-    console.error("   - Verify your MongoDB credentials");
-    console.error("   - Ensure your internet connection is stable");
-
     // Retry connection after 5 seconds
-    console.log("🔄 Retrying connection in 5 seconds...");
     setTimeout(connectDB, 5000);
   }
 };
@@ -120,12 +116,11 @@ if (process.env.NODE_ENV === "production") {
 
 // ─── Global Error Handler ─────────────────
 app.use((err, req, res, next) => {
-  console.error("❗", err.stack);
+  // Global error handler
+
   res.status(500).json({ message: "Something went wrong!" });
 });
 
 // ─── Start Server ─────────────────────────
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => { });

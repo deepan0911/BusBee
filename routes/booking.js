@@ -27,14 +27,14 @@ router.get("/operator/my-bookings", operatorAuth, async (req, res) => {
 // Create booking
 router.post("/", auth, async (req, res) => {
   try {
-    console.log("📦 Booking request received:", req.body)
-    console.log("👤 User:", req.user.name, req.user.email)
+    // console.log("📦 Booking request received:", req.body)
+    // console.log("👤 User:", req.user.name, req.user.email)
 
     const { busId, passengers, journeyDate, contactDetails, boardingPoint, droppingPoint } = req.body
 
     // Validate required fields
     if (!busId || !passengers || !journeyDate || !contactDetails) {
-      console.log("❌ Missing required fields")
+      // console.log("❌ Missing required fields")
       return res.status(400).json({
         message: "Missing required fields",
         received: {
@@ -47,26 +47,26 @@ router.post("/", auth, async (req, res) => {
     }
 
     // Get bus details
-    console.log("🚌 Fetching bus:", busId)
+    // console.log("🚌 Fetching bus:", busId)
     const bus = await Bus.findById(busId)
     if (!bus) {
-      console.log("❌ Bus not found:", busId)
+      // console.log("❌ Bus not found:", busId)
       return res.status(404).json({ message: "Bus not found" })
     }
 
-    console.log("✅ Bus found:", bus.operatorName, bus.busNumber)
+    // console.log("✅ Bus found:", bus.operatorName, bus.busNumber)
 
     // Check seat availability
     const requestedSeats = passengers.map((p) => p.seatNumber)
-    console.log("🪑 Requested seats:", requestedSeats)
+    // console.log("🪑 Requested seats:", requestedSeats)
 
     const unavailableSeats = bus.seats.filter((seat) => requestedSeats.includes(seat.seatNumber) && seat.isBooked)
 
     if (unavailableSeats.length > 0) {
-      console.log(
-        "❌ Seats unavailable:",
-        unavailableSeats.map((s) => s.seatNumber),
-      )
+      // console.log(
+      //   "❌ Seats unavailable:",
+      //   unavailableSeats.map((s) => s.seatNumber),
+      // )
       return res.status(400).json({
         message: "Some seats are already booked",
         unavailableSeats: unavailableSeats.map((s) => s.seatNumber),
@@ -75,11 +75,11 @@ router.post("/", auth, async (req, res) => {
 
     // Calculate total amount
     const totalAmount = passengers.length * bus.price
-    console.log("💰 Total amount:", totalAmount)
+    // console.log("💰 Total amount:", totalAmount)
 
     // Generate unique booking ID
     const bookingId = "BK" + Date.now() + Math.floor(Math.random() * 1000)
-    console.log("🆔 Generated booking ID:", bookingId)
+    // console.log("🆔 Generated booking ID:", bookingId)
 
     // Create booking
     const booking = new Booking({
@@ -95,9 +95,9 @@ router.post("/", auth, async (req, res) => {
       status: "confirmed", // Directly confirm booking without payment
     })
 
-    console.log("💾 Saving booking...")
+    // console.log("💾 Saving booking...")
     await booking.save()
-    console.log("✅ Booking saved:", booking.bookingId)
+    // console.log("✅ Booking saved:", booking.bookingId)
 
     // Update bus seats
     bus.seats.forEach((seat) => {
@@ -110,7 +110,7 @@ router.post("/", auth, async (req, res) => {
 
     bus.availableSeats -= passengers.length
     await bus.save()
-    console.log("✅ Bus seats updated")
+    // console.log("✅ Bus seats updated")
 
     // Populate booking for response
     await booking.populate("bus user")
@@ -128,13 +128,13 @@ router.post("/", auth, async (req, res) => {
         totalAmount: booking.totalAmount,
         passengers: booking.passengers,
       })
-      console.log("📧 Confirmation email sent")
+      // console.log("📧 Confirmation email sent")
     } catch (emailError) {
-      console.log("⚠️ Email sending failed:", emailError.message)
+      // console.log("⚠️ Email sending failed:", emailError.message)
       // Don't fail the booking if email fails
     }
 
-    console.log("🎉 Booking completed successfully")
+    // console.log("🎉 Booking completed successfully")
     res.status(201).json({
       success: true,
       message: "Booking confirmed successfully!",
@@ -142,7 +142,7 @@ router.post("/", auth, async (req, res) => {
     })
 
   } catch (error) {
-    console.error("💥 Booking error:", error)
+    // console.error("💥 Booking error:", error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 })

@@ -7,7 +7,7 @@ const SeatLayout = ({ bus, selectedSeats, onSeatSelect, onProceed }) => {
   // CRITICAL: Use the exact layoutConfig saved by the operator - no defaults!
   // If layoutConfig is missing, this means the bus was created incorrectly
   if (!bus.layoutConfig) {
-    console.error("Bus missing layoutConfig! This bus was not properly configured by the operator.")
+    // console.error("Bus missing layoutConfig! This bus was not properly configured by the operator.")
   }
 
   const config = bus.layoutConfig || {

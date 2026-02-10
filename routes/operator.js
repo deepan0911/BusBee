@@ -40,7 +40,7 @@ router.get("/dashboard", operatorAuth, async (req, res) => {
             recentBookings
         })
     } catch (error) {
-        console.error("Dashboard error:", error)
+        // console.error("Dashboard error:", error)
         res.status(500).json({ message: "Server error", error: error.message })
     }
 })
